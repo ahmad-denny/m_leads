@@ -290,7 +290,7 @@
         let filteredData = [];
         let chartPosInstance = null;
         let chartPerfInstance = null;
-        let sortDirection = -1; // 1 for asc, -1 for desc
+        let sortDirection = 1; // 1 for asc, -1 for desc
         let currentSortKey = '';
         let isNameFiltered = false;
 
@@ -478,12 +478,19 @@
             const totalInt = sum('Jlh_Leads_Interested');
             const totalBook = sum('Jlh_Leads_Booking');
 
-            // Calculate Percentages
-            const calcPerc = (val, total) => total > 0 ? ((val / total) * 100).toFixed(1) + '%' : '0%';
+            // Calculate Percentages according to specific logic:
+            // % FU = FU / Leads
+            // % Int = Int / FU
+            // % Book = Book / Int
             
-            const percFU = calcPerc(totalFU, totalLeads);
-            const percInt = calcPerc(totalInt, totalLeads);
-            const percBook = calcPerc(totalBook, totalLeads);
+            const safeDivide = (num, denom) => {
+                if (!denom || denom === 0) return 0;
+                return (num / denom) * 100;
+            };
+
+            const percFU = safeDivide(totalFU, totalLeads).toFixed(1) + '%';
+            const percInt = safeDivide(totalInt, totalFU).toFixed(1) + '%';
+            const percBook = safeDivide(totalBook, totalInt).toFixed(1) + '%';
 
             // Update Numbers
             const targets = [
@@ -522,18 +529,19 @@
             const posLeadsData = posLabels.map(k => posGroups[k].leads);
             const posBookingData = posLabels.map(k => posGroups[k].booking);
 
-            renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', true);
+            renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
             // 2. Top 5 Performers (by Booking)
-            // Sort Descending first to get the highest values
+            // Step A: Sort Descending (Highest Booking First)
             const sortedDesc = [...filteredData]
                 .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0));
             
-            // Take top 5
+            // Step B: Take Top 5
             const top5 = sortedDesc.slice(0, 5);
 
-            // For Horizontal Bar Chart (IndexAxis 'y'), ChartJS renders the first item in the array at the BOTTOM.
-            // To show Rank 1 at the TOP, we must Reverse the array before passing it to the chart.
+            // Step C: Reverse for Chart Display
+            // ChartJS Horizontal Bar renders index 0 at the BOTTOM.
+            // To show Rank 1 at the TOP, we must reverse the array so Rank 1 is last in the array.
             const top5Reversed = [...top5].reverse();
 
             const perfLabels = top5Reversed.map(d => d['Marketing Name']);
@@ -543,7 +551,7 @@
             renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 5 Staff by Booking', true);
         }
 
-        function renderBarChart(canvasId, labels, dataLeads, dataBooking, title, isHorizontal = true) {
+        function renderBarChart(canvasId, labels, dataLeads, dataBooking, title, isHorizontal = false) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
             if (canvasId === 'chartPosition') {
