@@ -504,9 +504,9 @@
             document.getElementById('percBooking').innerText = `(${percBook})`;
         }
 
-        // --- Charting (PERBAIKAN UTAMA DI SINI) ---
+        // --- Charting (SOLUSI FINAL) ---
         function updateCharts() {
-            // 1. Performance by Position
+            // 1. Performance by Position (Tetap sama)
             const posGroups = {};
             filteredData.forEach(d => {
                 if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
@@ -520,27 +520,29 @@
 
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
-            // 2. Top 5 Performers (LOGIKA BARU YANG LEBIH KUAT)
+            // 2. Top 5 Performers (LOGIKA FINAL)
             
-            // Langkah 1: Sortir DESCENDING (Terbesar -> Terkecil)
-            // Kita paksa konversi ke Number agar sorting matematika benar
+            // Langkah A: Sortir DESCENDING (Terbesar -> Terkecil)
             const sortedDesc = [...filteredData].sort((a, b) => {
                 const valA = Number(a.Jlh_Leads_Booking) || 0;
                 const valB = Number(b.Jlh_Leads_Booking) || 0;
-                return valB - valA; // B - A untuk Descending
+                return valB - valA; 
             });
             
-            // Langkah 2: Ambil 5 teratas
+            // Langkah B: Ambil 5 teratas
+            // Hasil: [Riza(4), Arief(3), Faisal(2), Ziqri(1), Maulana(1)]
             const top5 = sortedDesc.slice(0, 5);
 
-            // Debugging: Cek siapa saja yang masuk top 5 di console browser
-            console.log("Top 5 Data:", top5.map(p => ({ name: p['Marketing Name'], booking: p.Jlh_Leads_Booking })));
+            // Langkah C: REVERSE ARRAY MANUAL
+            // Hasil: [Maulana(1), Ziqri(1), Faisal(2), Arief(3), Riza(4)]
+            // Ketika Chart.js merender ini tanpa opsi reverse:
+            // Index 0 (Maulana) akan di BAWAH.
+            // Index 4 (Riza) akan di ATAS.
+            const finalChartData = [...top5].reverse();
 
-            // Langkah 3: Siapkan Array
-            // Karena kita pakai reverse: true di chart, array harus [Rank 1, Rank 2, ...]
-            const perfLabels = top5.map(d => d['Marketing Name']);
-            const perfLeads = top5.map(d => Number(d.Jlh_Leads) || 0);
-            const perfBooking = top5.map(d => Number(d.Jlh_Leads_Booking) || 0);
+            const perfLabels = finalChartData.map(d => d['Marketing Name']);
+            const perfLeads = finalChartData.map(d => Number(d.Jlh_Leads) || 0);
+            const perfBooking = finalChartData.map(d => Number(d.Jlh_Leads_Booking) || 0);
 
             renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 5 Staff by Booking', true);
         }
@@ -620,8 +622,7 @@
                         },
                         y: { 
                             stacked: false,
-                            // KUNCI PERBAIKAN: Reverse Sumbu Y agar Index 0 (Rank 1) ada di ATAS
-                            reverse: isHorizontal ? true : false,
+                            // HAPUS reverse: true dari sini karena kita sudah reverse array manual di JS
                             ticks: { 
                                 display: isHorizontal, 
                                 color: textColor,
@@ -643,7 +644,7 @@
             if (canvasId === 'chartPosition') chartPosInstance = newChart;
             else chartPerfInstance = newChart;
         }
-
+        
         // --- Table Rendering ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
