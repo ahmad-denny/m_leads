@@ -121,7 +121,7 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Follow Up</p>
-                        <h2 class="text-lg md:text-2xl font-bold leading-tight" id="sumFU">0</h2>
+                        <h2 class="text-lg md:text-2xl font-bold leading-tight" id="sumFU">0 <span class="text-xs font-normal text-gray-500" id="percFU">(0%)</span></h2>
                     </div>
                 </div>
             </div>
@@ -134,7 +134,7 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Interested</p>
-                        <h2 class="text-lg md:text-2xl font-bold leading-tight" id="sumInterest">0</h2>
+                        <h2 class="text-lg md:text-2xl font-bold leading-tight" id="sumInterest">0 <span class="text-xs font-normal text-gray-500" id="percInterest">(0%)</span></h2>
                     </div>
                 </div>
             </div>
@@ -147,7 +147,7 @@
                     </div>
                     <div class="min-w-0">
                         <p class="text-xs text-gray-500 dark:text-gray-400 truncate">Booking</p>
-                        <h2 class="text-lg md:text-2xl font-bold leading-tight" id="sumBooking">0</h2>
+                        <h2 class="text-lg md:text-2xl font-bold leading-tight" id="sumBooking">0 <span class="text-xs font-normal text-gray-500" id="percBooking">(0%)</span></h2>
                     </div>
                 </div>
             </div>
@@ -242,28 +242,28 @@
                             <th scope="col" class="hidden">NIK</th>
                             
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Marketing Name')">
-                                Name <i class="fas fa-sort ml-1"></i>
+                                Name <i class="fas fa-sort ml-1 text-[10px]"></i>
                             </th>
                             <!-- Position Hidden on Mobile -->
                             <th scope="col" class="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Position')">
-                                Position <i class="fas fa-sort ml-1"></i>
+                                Position <i class="fas fa-sort ml-1 text-[10px]"></i>
                             </th>
                             <!-- Branch Hidden on Mobile/Tablet -->
                             <th scope="col" class="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Branch')">
-                                Branch <i class="fas fa-sort ml-1"></i>
+                                Branch <i class="fas fa-sort ml-1 text-[10px]"></i>
                             </th>
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads')">
-                                Leads <i class="fas fa-sort ml-1"></i>
+                                Leads <i class="fas fa-sort ml-1 text-[10px]"></i>
                             </th>
                             <!-- FU Hidden on Small Mobile -->
                             <th scope="col" class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_FU')">
-                                FU <i class="fas fa-sort ml-1"></i>
+                                FU <i class="fas fa-sort ml-1 text-[10px]"></i>
                             </th>
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Interested')">
-                                Int <i class="fas fa-sort ml-1"></i>
+                                Int <i class="fas fa-sort ml-1 text-[10px]"></i>
                             </th>
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Booking')">
-                                Book <i class="fas fa-sort ml-1"></i>
+                                Book <i class="fas fa-sort ml-1 text-[10px]"></i>
                             </th>
                         </tr>
                     </thead>
@@ -285,6 +285,7 @@
         let sortDirection = 1; // 1 for asc, -1 for desc
         let currentSortKey = '';
         let isNameFiltered = false;
+        let debounceTimer = null;
 
         // Register ChartJS DataLabels Plugin
         Chart.register(ChartDataLabels);
@@ -295,10 +296,15 @@
             setupTheme();
             
             // Event Listeners for Filters
+            // Added Debounce to Input
             document.getElementById('filterInput').addEventListener('input', (e) => {
-                isNameFiltered = e.target.value.length > 0;
-                applyFilters();
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    isNameFiltered = e.target.value.length > 0;
+                    applyFilters();
+                }, 500); // Wait 500ms after typing stops
             });
+
             document.getElementById('filterPeriod').addEventListener('change', applyFilters);
             document.getElementById('filterPosition').addEventListener('change', applyFilters);
             document.getElementById('filterBranch').addEventListener('change', applyFilters);
@@ -434,6 +440,9 @@
 
         // --- Click Name to Filter ---
         function filterByName(name) {
+            // Clear debounce if any
+            clearTimeout(debounceTimer);
+            
             document.getElementById('filterInput').value = name;
             isNameFiltered = true;
             
@@ -473,19 +482,34 @@
             const sum = (key) => filteredData.reduce((acc, curr) => acc + (curr[key] || 0), 0);
             const uniqueNiks = new Set(filteredData.map(d => d.NIK));
             
+            const totalLeads = sum('Jlh_Leads');
+            const totalFU = sum('Jlh_Leads_FU');
+            const totalInterest = sum('Jlh_Leads_Interested');
+            const totalBooking = sum('Jlh_Leads_Booking');
+
+            // Calculate Percentages
+            const calcPerc = (part, total) => {
+                if (total === 0) return "0%";
+                return "(" + ((part / total) * 100).toFixed(1) + "%)";
+            };
+
             const targets = [
                 { id: 'sumTeam', val: uniqueNiks.size },
-                { id: 'sumLeads', val: sum('Jlh_Leads') },
-                { id: 'sumFU', val: sum('Jlh_Leads_FU') },
-                { id: 'sumInterest', val: sum('Jlh_Leads_Interested') },
-                { id: 'sumBooking', val: sum('Jlh_Leads_Booking') }
+                { id: 'sumLeads', val: totalLeads },
+                { id: 'sumFU', val: totalFU, percId: 'percFU', percVal: calcPerc(totalFU, totalLeads) },
+                { id: 'sumInterest', val: totalInterest, percId: 'percInterest', percVal: calcPerc(totalInterest, totalLeads) },
+                { id: 'sumBooking', val: totalBooking, percId: 'percBooking', percVal: calcPerc(totalBooking, totalLeads) }
             ];
 
             targets.forEach(t => {
                 const el = document.getElementById(t.id);
-                const currentVal = parseInt(el.innerText.replace(/,/g, '')) || 0;
+                const currentVal = parseInt(el.innerText.replace(/[^0-9]/g, '')) || 0; // Extract number only
                 if (currentVal !== t.val) {
                     animateValue(el, currentVal, t.val, 1000);
+                }
+                // Update Percentage Text if exists
+                if (t.percId) {
+                    document.getElementById(t.percId).textContent = t.percVal;
                 }
             });
         }
@@ -500,9 +524,21 @@
                 posGroups[d.Position].booking += (d.Jlh_Leads_Booking || 0);
             });
 
-            const posLabels = Object.keys(posGroups);
-            const posLeadsData = posLabels.map(k => posGroups[k].leads);
-            const posBookingData = posLabels.map(k => posGroups[k].booking);
+            // Map Labels
+            const labelMap = {
+                'CS Hybrid': 'CSH',
+                'CS Reguler': 'CSR',
+                'RM Consumer': 'RMC',
+                'RM Funding  & Hajj': 'RMFH',
+                'RM Priority': 'RMP',
+                'RM SME': 'RMS'
+            };
+
+            const posLabels = Object.keys(posGroups).map(k => labelMap[k] || k);
+            const posKeys = Object.keys(posGroups); // Keep original keys for data mapping if needed, but here order matches
+            
+            const posLeadsData = posKeys.map(k => posGroups[k].leads);
+            const posBookingData = posKeys.map(k => posGroups[k].booking);
 
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
@@ -572,7 +608,7 @@
                     responsive: true,
                     indexAxis: isHorizontal ? 'y' : 'x',
                     layout: {
-                        padding: isHorizontal ? { left: 150, right: 30 } : { top: 20 } // Increased left padding for names
+                        padding: isHorizontal ? { left: 120, right: 30, top: 10, bottom: 10 } : { top: 20 } // Adjusted padding
                     },
                     plugins: {
                         legend: { 
