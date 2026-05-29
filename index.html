@@ -23,9 +23,8 @@
         }
     </script>
     
-    <!-- Chart.js & DataLabels Plugin -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <!-- Chart.js VERSI TERBARU STABLE (tanpa plugin datalabels dulu) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -50,22 +49,20 @@
             background: #555; 
         }
         
-        /* Smooth transitions */
         body { transition: background-color 0.3s, color 0.3s; }
         .card { transition: transform 0.2s; }
         .card:hover { transform: translateY(-2px); }
         
-        /* Name Clickable Style */
         .clickable-name {
             cursor: pointer;
             transition: color 0.2s;
         }
         .clickable-name:hover {
             text-decoration: underline;
-            color: #2563eb; /* blue-600 */
+            color: #2563eb;
         }
         .dark .clickable-name:hover {
-            color: #60a5fa; /* blue-400 */
+            color: #60a5fa;
         }
     </style>
 </head>
@@ -506,7 +503,7 @@
 
         // --- Charting (SOLUSI FINAL) ---
         function updateCharts() {
-            // ... (Chart Position tetap sama) ...
+            // Chart Position tetap sama
             const posGroups = {};
             filteredData.forEach(d => {
                 if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
@@ -516,23 +513,24 @@
             const posLabels = Object.keys(posGroups);
             const posLeadsData = posLabels.map(k => posGroups[k].leads);
             const posBookingData = posLabels.map(k => posGroups[k].booking);
-            renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
+            renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, false);
 
-            // 2. Top 5 Performers (SOLUSI FINAL ABSOLUTE)
-            
-            // Ambil 5 data dengan booking tertinggi
+            // Top 5 Performers - LOGIKA PALING SEDERHANA
             const top5 = [...filteredData]
                 .sort((a, b) => (Number(b.Jlh_Leads_Booking) || 0) - (Number(a.Jlh_Leads_Booking) || 0))
                 .slice(0, 5);
+            
+            // REVERSE ARRAY MANUAL agar Rank 1 jadi index terakhir
+            const top5Reversed = [...top5].reverse();
+            
+            const perfLabels = top5Reversed.map(d => d['Marketing Name']);
+            const perfLeads = top5Reversed.map(d => Number(d.Jlh_Leads) || 0);
+            const perfBooking = top5Reversed.map(d => Number(d.Jlh_Leads_Booking) || 0);
 
-            // JANGAN REVERSE ARRAY DI SINI!
-            const perfLabels = top5.map(d => d['Marketing Name']);
-            const perfLeads = top5.map(d => Number(d.Jlh_Leads) || 0);
-            const perfBooking = top5.map(d => Number(d.Jlh_Leads_Booking) || 0);
+            renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, true);
+        }
 
-            renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 5 Staff by Booking', true);
-        }        
-        function renderBarChart(canvasId, labels, dataLeads, dataBooking, title, isHorizontal = false) {
+        function renderBarChart(canvasId, labels, dataLeads, dataBooking, isHorizontal = false) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
             if (canvasId === 'chartPosition') {
@@ -544,9 +542,6 @@
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
 
-            // Khusus untuk chart performers, kita paksa reverse sumbu Y
-            const shouldReverseY = (canvasId === 'chartPerformers');
-
             const config = {
                 type: 'bar',
                 data: {
@@ -557,83 +552,44 @@
                             data: dataLeads,
                             backgroundColor: 'rgba(59, 130, 246, 0.7)',
                             borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1,
-                            datalabels: {
-                                anchor: 'end',
-                                align: 'end', 
-                                color: textColor,
-                                font: { weight: 'bold', size: 10 },
-                                formatter: Math.round
-                            }
+                            borderWidth: 1
                         },
                         {
                             label: 'Booking',
                             data: dataBooking,
                             backgroundColor: 'rgba(239, 68, 68, 0.7)',
                             borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1,
-                            datalabels: {
-                                anchor: 'end',
-                                align: 'end', 
-                                color: textColor,
-                                font: { weight: 'bold', size: 10 },
-                                formatter: Math.round,
-                                display: true
-                            }
+                            borderWidth: 1
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     indexAxis: isHorizontal ? 'y' : 'x',
-                    layout: {
-                        padding: isHorizontal ? { left: 10, right: 30 } : { top: 20 } 
-                    },
                     plugins: {
                         legend: { 
                             position: 'top',
-                            labels: { 
-                                color: textColor,
-                                usePointStyle: true, 
-                                pointStyle: 'circle',
-                                font: { size: 10 } 
-                            }
-                        },
-                        title: { display: false },
-                        datalabels: { display: true }
+                            labels: { color: textColor, usePointStyle: true, pointStyle: 'circle' }
+                        }
                     },
                     scales: {
                         x: { 
-                            stacked: false,
-                            ticks: { display: !isHorizontal, color: textColor, font: { size: 10 } },
+                            ticks: { display: !isHorizontal, color: textColor },
                             grid: { display: false } 
                         },
                         y: { 
-                            stacked: false,
-                            // INI KUNCINYA: Hanya reverse untuk chart performers
-                            reverse: shouldReverseY,
-                            ticks: { 
-                                display: isHorizontal, 
-                                color: textColor,
-                                font: { size: 10 }
-                            },
+                            ticks: { color: textColor },
                             grid: { display: false } 
                         }
                     }
                 }
             };
 
-            if (!isHorizontal) {
-                config.options.scales.x.ticks.display = false;
-                config.options.scales.y.ticks.display = false;
-            }
-
             const newChart = new Chart(ctx, config);
 
             if (canvasId === 'chartPosition') chartPosInstance = newChart;
             else chartPerfInstance = newChart;
-        }
-        
+        }        
         // --- Table Rendering ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
