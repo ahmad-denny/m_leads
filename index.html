@@ -23,8 +23,9 @@
         }
     </script>
     
-    <!-- Chart.js -->
+    <!-- Chart.js & DataLabels Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -53,6 +54,19 @@
         body { transition: background-color 0.3s, color 0.3s; }
         .card { transition: transform 0.2s; }
         .card:hover { transform: translateY(-2px); }
+        
+        /* Name Clickable Style */
+        .clickable-name {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .clickable-name:hover {
+            text-decoration: underline;
+            color: #2563eb; /* blue-600 */
+        }
+        .dark .clickable-name:hover {
+            color: #60a5fa; /* blue-400 */
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 dark:bg-darkbg dark:text-gray-200 min-h-screen font-sans">
@@ -169,7 +183,6 @@
                         <option value="">All Positions</option>
                         <option value="__ALL_RM__" class="font-bold text-blue-600">-- All RM --</option>
                         <option value="__ALL_CS__" class="font-bold text-green-600">-- All CS --</option>
-                        <!-- Other positions will be added via JS -->
                     </select>
                 </div>
 
@@ -212,11 +225,11 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-800">
                         <tr>
+                            <!-- NIK Hidden on request -->
+                            <th scope="col" class="hidden">NIK</th>
+                            
                             <th scope="col" class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Marketing Name')">
                                 Name <i class="fas fa-sort ml-1"></i>
-                            </th>
-                            <th scope="col" class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('NIK')">
-                                NIK <i class="fas fa-sort ml-1"></i>
                             </th>
                             <th scope="col" class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 hidden md:table-cell" onclick="sortTable('Position')">
                                 Position <i class="fas fa-sort ml-1"></i>
@@ -256,6 +269,9 @@
         let sortDirection = 1; // 1 for asc, -1 for desc
         let currentSortKey = '';
 
+        // Register ChartJS DataLabels Plugin
+        Chart.register(ChartDataLabels);
+
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
@@ -275,7 +291,6 @@
                 const response = await fetch('dataleads.json');
                 const json = await response.json();
                 
-                // Clean Data: Trim keys and values, parse numbers
                 const leadsArray = json.leads || json["leads "] || [];
                 
                 rawData = leadsArray.map(item => {
@@ -285,11 +300,10 @@
                         let val = item[key];
                         if (typeof val === 'string') {
                             val = val.trim();
-                            // Check if it's a number string
                             if (!isNaN(val) && val !== '') {
                                 val = parseInt(val, 10);
                             } else if (val === '-' || val === '-    ') {
-                                val = 0; // Treat dash as 0
+                                val = 0;
                             }
                         }
                         cleanItem[cleanKey] = val;
@@ -302,22 +316,18 @@
 
             } catch (error) {
                 console.error("Error loading JSON:", error);
-                alert("Gagal memuat dataleads.json. Pastikan file berada di folder yang sama.");
+                alert("Gagal memuat dataleads.json.");
             }
         }
 
         // --- Dropdown Population ---
         function populateDropdowns() {
             const periods = [...new Set(rawData.map(d => d.Period))].sort();
-            // Get unique positions, but exclude the special group keys we will add manually
             const positions = [...new Set(rawData.map(d => d.Position))].sort();
             const branches = [...new Set(rawData.map(d => d.Branch))].sort();
 
             fillSelect('filterPeriod', periods);
-            
-            // Add specific positions to the existing options (All RM/CS are already in HTML)
             fillSelect('filterPosition', positions);
-            
             fillSelect('filterBranch', branches);
         }
 
@@ -339,15 +349,10 @@
             const branchVal = document.getElementById('filterBranch').value;
 
             filteredData = rawData.filter(item => {
-                // Text Search (NIK or Name)
                 const matchText = 
                     (item.NIK && item.NIK.toString().toLowerCase().includes(inputVal)) ||
                     (item['Marketing Name'] && item['Marketing Name'].toLowerCase().includes(inputVal));
 
-                // Dropdown Filters
-                const matchPeriod = periodVal ? item.Period === periodVal : true;
-                
-                // Special Logic for Position (All RM / All CS)
                 let matchPos = true;
                 if (posVal) {
                     if (posVal === '__ALL_RM__') {
@@ -359,6 +364,7 @@
                     }
                 }
 
+                const matchPeriod = periodVal ? item.Period === periodVal : true;
                 const matchBranch = branchVal ? item.Branch === branchVal : true;
 
                 return matchText && matchPeriod && matchPos && matchBranch;
@@ -375,6 +381,16 @@
             applyFilters();
         }
 
+        // --- Click Name to Filter ---
+        function filterByName(name) {
+            document.getElementById('filterInput').value = name;
+            // Reset other filters to ensure we see all data for this person
+            document.getElementById('filterPeriod').value = '';
+            document.getElementById('filterPosition').value = '';
+            document.getElementById('filterBranch').value = '';
+            applyFilters();
+        }
+
         // --- Dashboard Updates ---
         function updateDashboard() {
             updateSummaryCards();
@@ -382,17 +398,39 @@
             renderTable();
         }
 
+        // --- Animation Function ---
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
         function updateSummaryCards() {
             const sum = (key) => filteredData.reduce((acc, curr) => acc + (curr[key] || 0), 0);
-            
-            // Total Team Sales = Count of unique NIKs in filtered data
             const uniqueNiks = new Set(filteredData.map(d => d.NIK));
             
-            document.getElementById('sumTeam').textContent = uniqueNiks.size;
-            document.getElementById('sumLeads').textContent = sum('Jlh_Leads');
-            document.getElementById('sumFU').textContent = sum('Jlh_Leads_FU');
-            document.getElementById('sumInterest').textContent = sum('Jlh_Leads_Interested');
-            document.getElementById('sumBooking').textContent = sum('Jlh_Leads_Booking');
+            const targets = [
+                { id: 'sumTeam', val: uniqueNiks.size },
+                { id: 'sumLeads', val: sum('Jlh_Leads') },
+                { id: 'sumFU', val: sum('Jlh_Leads_FU') },
+                { id: 'sumInterest', val: sum('Jlh_Leads_Interested') },
+                { id: 'sumBooking', val: sum('Jlh_Leads_Booking') }
+            ];
+
+            targets.forEach(t => {
+                const el = document.getElementById(t.id);
+                const currentVal = parseInt(el.innerText.replace(/,/g, '')) || 0;
+                if (currentVal !== t.val) {
+                    animateValue(el, currentVal, t.val, 1000);
+                }
+            });
         }
 
         // --- Charting ---
@@ -409,12 +447,15 @@
             const posLeadsData = posLabels.map(k => posGroups[k].leads);
             const posBookingData = posLabels.map(k => posGroups[k].booking);
 
-            renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position');
+            renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
             // 2. Top 10 Performers (by Booking)
             const topPerformers = [...filteredData]
                 .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0))
                 .slice(0, 10);
+
+            // Reverse to show highest at top for horizontal bar
+            topPerformers.reverse();
 
             const perfLabels = topPerformers.map(d => d['Marketing Name']);
             const perfLeads = topPerformers.map(d => d.Jlh_Leads || 0);
@@ -426,7 +467,6 @@
         function renderBarChart(canvasId, labels, dataLeads, dataBooking, title, isHorizontal = false) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
-            // Destroy existing chart if exists
             if (canvasId === 'chartPosition') {
                 if (chartPosInstance) chartPosInstance.destroy();
             } else {
@@ -435,7 +475,6 @@
 
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
-            const gridColor = isDark ? '#334155' : '#e2e8f0';
 
             const config = {
                 type: 'bar',
@@ -447,14 +486,26 @@
                             data: dataLeads,
                             backgroundColor: 'rgba(59, 130, 246, 0.7)',
                             borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                color: textColor,
+                                font: { weight: 'bold' }
+                            }
                         },
                         {
                             label: 'Booking',
                             data: dataBooking,
                             backgroundColor: 'rgba(239, 68, 68, 0.7)',
                             borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                color: textColor,
+                                font: { weight: 'bold' }
+                            }
                         }
                     ]
                 },
@@ -466,18 +517,21 @@
                             position: 'top',
                             labels: { color: textColor }
                         },
-                        title: { display: false }
+                        title: { display: false },
+                        datalabels: {
+                            display: true
+                        }
                     },
                     scales: {
                         x: { 
                             stacked: false,
                             ticks: { color: textColor },
-                            grid: { color: gridColor }
+                            grid: { display: false } // Hide Grid
                         },
                         y: { 
                             stacked: false,
                             ticks: { color: textColor },
-                            grid: { color: gridColor }
+                            grid: { display: false } // Hide Grid
                         }
                     }
                 }
@@ -499,13 +553,13 @@
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 transition";
                 
-                // Clickable Row Logic
-                tr.onclick = () => alert(`Detail untuk:\nNama: ${row['Marketing Name']}\nNIK: ${row.NIK}\nBranch: ${row.Branch}`);
+                // Clickable Row Logic -> Filter by Name
+                tr.onclick = () => filterByName(row['Marketing Name']);
                 tr.style.cursor = 'pointer';
 
                 tr.innerHTML = `
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm font-medium text-primary hover:underline">${row['Marketing Name']}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${row.NIK}</td>
+                    <td class="hidden">${row.NIK}</td>
+                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm font-medium text-primary clickable-name">${row['Marketing Name']}</td>
                     <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">${row.Position}</td>
                     <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">${row.Branch}</td>
                     <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-right font-bold">${row.Jlh_Leads}</td>
@@ -520,7 +574,7 @@
         // --- Sorting ---
         function sortTable(key) {
             if (currentSortKey === key) {
-                sortDirection *= -1; // Toggle direction
+                sortDirection *= -1;
             } else {
                 sortDirection = 1;
                 currentSortKey = key;
@@ -530,7 +584,6 @@
                 let valA = a[key];
                 let valB = b[key];
 
-                // Handle numeric vs string
                 if (typeof valA === 'number' && typeof valB === 'number') {
                     return (valA - valB) * sortDirection;
                 } else {
@@ -550,7 +603,6 @@
             const themeToggle = document.getElementById('themeToggle');
             const html = document.documentElement;
             
-            // Check local storage or system preference
             if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 html.classList.add('dark');
             } else {
@@ -564,7 +616,6 @@
                 } else {
                     localStorage.theme = 'light';
                 }
-                // Re-render charts to update colors
                 updateCharts(); 
             });
         }
