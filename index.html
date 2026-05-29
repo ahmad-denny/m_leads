@@ -474,7 +474,7 @@
 
         // --- CHARTING DENGAN APEXCHARTS - VERSI FINAL STABIL ---
         function updateCharts() {
-            // 1. Performance by Position
+            // 1. Performance by Position - SELALU GUNAKAN FALLBACK MANUAL
             const posGroups = {};
             filteredData.forEach(d => {
                 const position = d.Position || 'Unknown';
@@ -496,24 +496,12 @@
             console.log("filteredData length:", filteredData.length);
             console.log("===========================");
 
-            // Coba render dengan ApexCharts
-            try {
-                if (posLabels.length > 0 && 
-                    posLeadsData.every(n => typeof n === 'number' && !isNaN(n)) && 
-                    posBookingData.every(n => typeof n === 'number' && !isNaN(n))) {
-                    
-                    renderApexChart('chartPosition', posLabels, posLeadsData, posBookingData, false);
-                } else {
-                    throw new Error("No valid position data");
-                }
-            } catch (error) {
-                console.error("ApexCharts failed for Position, using fallback:", error);
-                document.querySelector("#chartPosition").classList.add('hidden');
-                document.querySelector("#chartPositionFallback").classList.remove('hidden');
-                renderManualBarChart('chartPositionFallback', posLabels, posLeadsData, posBookingData);
-            }
+            // SELALU GUNAKAN FALLBACK MANUAL UNTUK POSITION CHART
+            document.querySelector("#chartPosition").classList.add('hidden');
+            document.querySelector("#chartPositionFallback").classList.remove('hidden');
+            renderManualBarChart('chartPositionFallback', posLabels, posLeadsData, posBookingData);
 
-            // 2. Top 5 Performers
+            // 2. Top 5 Performers - Tetap gunakan ApexCharts (karena horizontal bar bekerja sempurna)
             const top5 = [...filteredData]
                 .sort((a, b) => (Number(b.Jlh_Leads_Booking) || 0) - (Number(a.Jlh_Leads_Booking) || 0))
                 .slice(0, 5);
@@ -533,7 +521,7 @@
                     '<div class="flex items-center justify-center h-[350px] text-gray-500">No performer data available</div>';
             }
         }
-
+        
         function renderApexChart(elementId, categories, leadsData, bookingData, isHorizontal = false) {
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
