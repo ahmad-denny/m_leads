@@ -532,19 +532,22 @@
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
             // 2. Top 5 Performers (by Booking)
-            // PERBAIKAN LOGIKA SORTING CHART HORIZONTAL
-            // Kita urutkan DESCENDING (Terbesar -> Terkecil)
+            // LOGIKA BARU:
+            // 1. Sort Descending (Terbesar dulu) -> [Rank 1, Rank 2, ..., Rank 5]
             const sortedDesc = [...filteredData]
                 .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0));
             
-            // Ambil 5 data terbesar
+            // 2. Ambil 5 teratas
             const top5 = sortedDesc.slice(0, 5);
+
+            // 3. Kita biarkan urutan array tetap [Rank 1, ..., Rank 5]
+            //    Lalu kita gunakan opsi 'reverse: true' di Chart.js Y-Axis
+            //    Agar Rank 1 (index 0) dipaksa naik ke atas.
 
             const perfLabels = top5.map(d => d['Marketing Name']);
             const perfLeads = top5.map(d => d.Jlh_Leads || 0);
             const perfBooking = top5.map(d => d.Jlh_Leads_Booking || 0);
 
-            // Panggil render dengan flag isHorizontal = true
             renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 5 Staff by Booking', true);
         }
 
@@ -629,9 +632,9 @@
                         },
                         y: { 
                             stacked: false,
-                            // PERBAIKAN UTAMA DI SINI:
-                            // reverse: true memaksa item pertama di array (Rank 1) muncul di ATAS
-                            reverse: isHorizontal, 
+                            // INI KUNCINYA:
+                            // Jika horizontal, reverse sumbu Y agar index 0 (terbesar) ada di ATAS
+                            reverse: isHorizontal ? true : false,
                             ticks: { 
                                 display: isHorizontal, 
                                 color: textColor,
