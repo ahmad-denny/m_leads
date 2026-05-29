@@ -23,14 +23,14 @@
         }
     </script>
     
-    <!-- Chart.js VERSI TERBARU STABLE (tanpa plugin datalabels dulu) -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Chart.js v3.9.1 + DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* Custom Scrollbar for Table */
         .table-container::-webkit-scrollbar {
             height: 6px;
             width: 6px;
@@ -81,10 +81,9 @@
 
     <div class="container mx-auto p-2 md:p-4 space-y-4 md:space-y-6">
 
-        <!-- Summary Cards (Compact Mobile Version) -->
+        <!-- Summary Cards -->
         <div id="summarySection" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4 scroll-mt-20">
             
-            <!-- Card 1: Team Sales -->
             <div class="card bg-white dark:bg-darkcard p-2 md:p-4 rounded-lg shadow border-l-4 border-blue-500 flex flex-col justify-between">
                 <div class="flex items-center space-x-2 md:space-x-3">
                     <div class="p-2 md:p-3 bg-blue-100 dark:bg-blue-900 rounded-full text-blue-600 dark:text-blue-300 shrink-0">
@@ -97,7 +96,6 @@
                 </div>
             </div>
 
-            <!-- Card 2: Leads Injected -->
             <div class="card bg-white dark:bg-darkcard p-2 md:p-4 rounded-lg shadow border-l-4 border-purple-500 flex flex-col justify-between">
                 <div class="flex items-center space-x-2 md:space-x-3">
                     <div class="p-2 md:p-3 bg-purple-100 dark:bg-purple-900 rounded-full text-purple-600 dark:text-purple-300 shrink-0">
@@ -110,7 +108,6 @@
                 </div>
             </div>
 
-            <!-- Card 3: Follow Up (With %) -->
             <div class="card bg-white dark:bg-darkcard p-2 md:p-4 rounded-lg shadow border-l-4 border-yellow-500 flex flex-col justify-between">
                 <div class="flex items-center space-x-2 md:space-x-3">
                     <div class="p-2 md:p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full text-yellow-600 dark:text-yellow-300 shrink-0">
@@ -126,7 +123,6 @@
                 </div>
             </div>
 
-            <!-- Card 4: Interested (With %) -->
             <div class="card bg-white dark:bg-darkcard p-2 md:p-4 rounded-lg shadow border-l-4 border-green-500 flex flex-col justify-between">
                 <div class="flex items-center space-x-2 md:space-x-3">
                     <div class="p-2 md:p-3 bg-green-100 dark:bg-green-900 rounded-full text-green-600 dark:text-green-300 shrink-0">
@@ -142,7 +138,6 @@
                 </div>
             </div>
 
-            <!-- Card 5: Booking (With %) -->
             <div class="card bg-white dark:bg-darkcard p-2 md:p-4 rounded-lg shadow border-l-4 border-red-500 flex flex-col justify-between col-span-2 md:col-span-1">
                 <div class="flex items-center space-x-2 md:space-x-3">
                     <div class="p-2 md:p-3 bg-red-100 dark:bg-red-900 rounded-full text-red-600 dark:text-red-300 shrink-0">
@@ -159,7 +154,7 @@
             </div>
         </div>
 
-        <!-- Active Filter Indicator & Reset (Hidden by default) -->
+        <!-- Active Filter Banner -->
         <div id="activeFilterBanner" class="hidden bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 p-3 rounded-lg flex justify-between items-center animate-pulse">
             <div class="flex items-center text-sm text-blue-800 dark:text-blue-200">
                 <i class="fas fa-filter mr-2"></i>
@@ -170,12 +165,10 @@
             </button>
         </div>
 
-        <!-- Filters Section (Compact Mobile Layout) -->
+        <!-- Filters Section -->
         <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
-            <!-- Mobile: 2 columns, Desktop: 5 columns -->
             <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 items-end">
                 
-                <!-- Input NIK/Name -->
                 <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">NIK / Name</label>
                     <div class="relative">
@@ -186,7 +179,6 @@
                     </div>
                 </div>
 
-                <!-- Select Period -->
                 <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">Period</label>
                     <select id="filterPeriod" class="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
@@ -194,7 +186,6 @@
                     </select>
                 </div>
 
-                <!-- Select Position -->
                 <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">Position</label>
                     <select id="filterPosition" class="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
@@ -204,7 +195,6 @@
                     </select>
                 </div>
 
-                <!-- Select Branch -->
                 <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">Branch</label>
                     <select id="filterBranch" class="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
@@ -212,7 +202,6 @@
                     </select>
                 </div>
 
-                <!-- Reset Button (Full width on mobile, auto on desktop) -->
                 <div class="col-span-2 md:col-span-2 lg:col-span-1">
                     <button id="btnReset" class="w-full bg-gray-500 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded transition flex justify-center items-center">
                         <i class="fas fa-undo mr-2"></i> Reset All
@@ -243,24 +232,19 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-800">
                         <tr>
-                            <!-- NIK Hidden on request -->
                             <th scope="col" class="hidden">NIK</th>
-                            
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Marketing Name')">
                                 Name <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <!-- Position Hidden on Mobile -->
                             <th scope="col" class="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Position')">
                                 Position <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <!-- Branch Hidden on Mobile/Tablet -->
                             <th scope="col" class="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Branch')">
                                 Branch <i class="fas fa-sort ml-1"></i>
                             </th>
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads')">
                                 Leads <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <!-- FU Hidden on Small Mobile -->
                             <th scope="col" class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_FU')">
                                 FU <i class="fas fa-sort ml-1"></i>
                             </th>
@@ -273,7 +257,6 @@
                         </tr>
                     </thead>
                     <tbody id="tableBody" class="bg-white dark:bg-darkcard divide-y divide-gray-200 dark:divide-gray-700">
-                        <!-- Rows will be inserted here -->
                     </tbody>
                 </table>
             </div>
@@ -287,19 +270,16 @@
         let filteredData = [];
         let chartPosInstance = null;
         let chartPerfInstance = null;
-        let sortDirection = 1; 
+        let sortDirection = 1;
         let currentSortKey = '';
         let isNameFiltered = false;
 
-        // Register ChartJS DataLabels Plugin
         Chart.register(ChartDataLabels);
 
-        // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setupTheme();
             
-            // Event Listeners for Filters
             document.getElementById('filterInput').addEventListener('input', (e) => {
                 isNameFiltered = e.target.value.length > 0;
                 applyFilters();
@@ -310,7 +290,6 @@
             document.getElementById('btnReset').addEventListener('click', resetFilters);
         });
 
-        // --- Data Loading ---
         async function loadData() {
             try {
                 const response = await fetch('dataleads.json');
@@ -324,10 +303,9 @@
                         const cleanKey = key.trim();
                         let val = item[key];
                         
-                        // KONVERSI EKSPLESIT KE NUMBER UNTUK KOLOM ANGKA
                         if (cleanKey.includes('Jlh_') || cleanKey === 'NIK') {
                             if (typeof val === 'string') {
-                                val = val.replace(/,/g, '').trim(); // Hapus koma jika ada
+                                val = val.replace(/,/g, '').trim();
                                 val = val === '-' || val === '' ? 0 : parseInt(val, 10);
                             }
                             if (isNaN(val)) val = 0;
@@ -341,7 +319,7 @@
                 });
 
                 populateDropdowns();
-                applyFilters(); 
+                applyFilters();
 
             } catch (error) {
                 console.error("Error loading JSON:", error);
@@ -349,7 +327,6 @@
             }
         }
 
-        // --- Dropdown Population ---
         function populateDropdowns() {
             const periods = [...new Set(rawData.map(d => d.Period))].sort();
             const positions = [...new Set(rawData.map(d => d.Position))].sort();
@@ -370,7 +347,6 @@
             });
         }
 
-        // --- Filtering Logic ---
         function applyFilters() {
             const inputVal = document.getElementById('filterInput').value.toLowerCase();
             const periodVal = document.getElementById('filterPeriod').value;
@@ -442,7 +418,6 @@
             document.getElementById('summarySection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- Dashboard Updates ---
         function updateDashboard() {
             updateSummaryCards();
             updateCharts();
@@ -501,28 +476,38 @@
             document.getElementById('percBooking').innerText = `(${percBook})`;
         }
 
-        // --- Charting (SOLUSI FINAL) ---
+        // --- CHARTING DENGAN LOGIKA YANG SUDAH TERBUKTI ---
         function updateCharts() {
-            // Chart Position tetap sama
+            // 1. Performance by Position
             const posGroups = {};
             filteredData.forEach(d => {
                 if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
                 posGroups[d.Position].leads += (Number(d.Jlh_Leads) || 0);
                 posGroups[d.Position].booking += (Number(d.Jlh_Leads_Booking) || 0);
             });
+
             const posLabels = Object.keys(posGroups);
             const posLeadsData = posLabels.map(k => posGroups[k].leads);
             const posBookingData = posLabels.map(k => posGroups[k].booking);
+
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, false);
 
-            // Top 5 Performers - LOGIKA PALING SEDERHANA
-            const top5 = [...filteredData]
-                .sort((a, b) => (Number(b.Jlh_Leads_Booking) || 0) - (Number(a.Jlh_Leads_Booking) || 0))
-                .slice(0, 5);
+            // 2. Top 5 Performers - LOGIKA FINAL YANG PASTI BERHASIL
+            // Langkah 1: Sort DESCENDING (Terbesar dulu)
+            const sortedDesc = [...filteredData].sort((a, b) => {
+                const valA = Number(a.Jlh_Leads_Booking) || 0;
+                const valB = Number(b.Jlh_Leads_Booking) || 0;
+                return valB - valA;
+            });
             
-            // REVERSE ARRAY MANUAL agar Rank 1 jadi index terakhir
+            // Langkah 2: Ambil 5 teratas
+            const top5 = sortedDesc.slice(0, 5);
+            
+            // Langkah 3: REVERSE ARRAY agar Rank 1 jadi index terakhir
+            // Contoh: [Riza(4), Arief(3), Faisal(2), Ziqri(1), Maulana(1)]
+            // Menjadi: [Maulana(1), Ziqri(1), Faisal(2), Arief(3), Riza(4)]
             const top5Reversed = [...top5].reverse();
-            
+
             const perfLabels = top5Reversed.map(d => d['Marketing Name']);
             const perfLeads = top5Reversed.map(d => Number(d.Jlh_Leads) || 0);
             const perfBooking = top5Reversed.map(d => Number(d.Jlh_Leads_Booking) || 0);
@@ -552,45 +537,86 @@
                             data: dataLeads,
                             backgroundColor: 'rgba(59, 130, 246, 0.7)',
                             borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'end', 
+                                color: textColor,
+                                font: { weight: 'bold', size: 10 },
+                                formatter: Math.round
+                            }
                         },
                         {
                             label: 'Booking',
                             data: dataBooking,
                             backgroundColor: 'rgba(239, 68, 68, 0.7)',
                             borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'end', 
+                                color: textColor,
+                                font: { weight: 'bold', size: 10 },
+                                formatter: Math.round,
+                                display: true
+                            }
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     indexAxis: isHorizontal ? 'y' : 'x',
+                    layout: {
+                        padding: isHorizontal ? { left: 10, right: 30 } : { top: 20 } 
+                    },
                     plugins: {
                         legend: { 
                             position: 'top',
-                            labels: { color: textColor, usePointStyle: true, pointStyle: 'circle' }
-                        }
+                            labels: { 
+                                color: textColor,
+                                usePointStyle: true, 
+                                pointStyle: 'circle',
+                                font: { size: 10 } 
+                            }
+                        },
+                        title: { display: false },
+                        datalabels: { display: true }
                     },
                     scales: {
                         x: { 
-                            ticks: { display: !isHorizontal, color: textColor },
+                            stacked: false,
+                            ticks: { 
+                                display: !isHorizontal, 
+                                color: textColor,
+                                font: { size: 10 }
+                            },
                             grid: { display: false } 
                         },
                         y: { 
-                            ticks: { color: textColor },
+                            stacked: false,
+                            // TIDAK ADA reverse: true DI SINI
+                            ticks: { 
+                                display: isHorizontal, 
+                                color: textColor,
+                                font: { size: 10 }
+                            },
                             grid: { display: false } 
                         }
                     }
                 }
             };
 
+            if (!isHorizontal) {
+                config.options.scales.x.ticks.display = false;
+                config.options.scales.y.ticks.display = false;
+            }
+
             const newChart = new Chart(ctx, config);
 
             if (canvasId === 'chartPosition') chartPosInstance = newChart;
             else chartPerfInstance = newChart;
-        }        
-        // --- Table Rendering ---
+        }
+
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -616,7 +642,6 @@
             });
         }
 
-        // --- Sorting ---
         function sortTable(key) {
             if (currentSortKey === key) {
                 sortDirection *= -1;
@@ -629,7 +654,6 @@
                 let valA = a[key];
                 let valB = b[key];
 
-                // Pastikan perbandingan angka dilakukan sebagai angka
                 if (typeof valA === 'number' && typeof valB === 'number') {
                     return (valA - valB) * sortDirection;
                 } else {
@@ -644,7 +668,6 @@
             renderTable();
         }
 
-        // --- Theme Toggle ---
         function setupTheme() {
             const themeToggle = document.getElementById('themeToggle');
             const html = document.documentElement;
