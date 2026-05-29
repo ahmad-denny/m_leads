@@ -217,7 +217,8 @@
 
         <!-- Charts Section -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
+            <!-- Chart Position: Hidden when filtering by name -->
+            <div id="chartPositionContainer" class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow transition-all duration-300">
                 <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4 border-b dark:border-gray-700 pb-2">Performance by Position</h3>
                 <canvas id="chartPosition"></canvas>
             </div>
@@ -396,18 +397,21 @@
         function updateActiveFilterBanner() {
             const banner = document.getElementById('activeFilterBanner');
             const mainFilters = document.getElementById('mainFilters');
+            const chartPosContainer = document.getElementById('chartPositionContainer');
             const nameVal = document.getElementById('filterInput').value;
             const nameDisplay = document.getElementById('activeFilterName');
             
             if (nameVal.length > 0) {
-                // Show Banner, Hide Main Filters
+                // Show Banner, Hide Main Filters, Hide Position Chart
                 banner.classList.remove('hidden');
                 mainFilters.classList.add('hidden');
+                chartPosContainer.classList.add('hidden');
                 nameDisplay.textContent = nameVal;
             } else {
-                // Hide Banner, Show Main Filters
+                // Hide Banner, Show Main Filters, Show Position Chart
                 banner.classList.add('hidden');
                 mainFilters.classList.remove('hidden');
+                chartPosContainer.classList.remove('hidden');
             }
         }
 
@@ -568,7 +572,7 @@
                     responsive: true,
                     indexAxis: isHorizontal ? 'y' : 'x',
                     layout: {
-                        padding: isHorizontal ? { left: 100, right: 30 } : { top: 20 } // Padding for names if horizontal
+                        padding: isHorizontal ? { left: 150, right: 30 } : { top: 20 } // Increased left padding for names
                     },
                     plugins: {
                         legend: { 
@@ -597,9 +601,10 @@
                         y: { 
                             stacked: false,
                             ticks: { 
-                                display: isHorizontal, // Show Y numbers (Names) for Horizontal Chart. Hide for Vertical (Position) as requested.
+                                display: true, // Always show labels (Names for Performers, Positions for Position Chart)
                                 color: textColor,
-                                font: { size: 10 }
+                                font: { size: 10 },
+                                align: 'start' // Align text to start (left for horizontal)
                             },
                             grid: { display: false } // Hide Grid
                         }
@@ -607,10 +612,23 @@
                 }
             };
 
-            // Special override for Position Chart to ensure NO numbers on axes
+            // Special override for Position Chart to ensure NO numbers on axes (only labels)
             if (!isHorizontal) {
-                config.options.scales.x.ticks.display = false;
+                // For Position Chart (Vertical):
+                // X Axis has Position Names. We want Names visible, Numbers hidden.
+                // But wait, Position Names are on X Axis for Vertical Bar.
+                // So X Axis ticks should display Labels.
+                config.options.scales.x.ticks.display = true; 
+                
+                // Y Axis has Values. We want Values hidden.
                 config.options.scales.y.ticks.display = false;
+            } else {
+                // For Performers Chart (Horizontal):
+                // Y Axis has Names. We want Names visible.
+                config.options.scales.y.ticks.display = true;
+                
+                // X Axis has Values. We want Values hidden.
+                config.options.scales.x.ticks.display = false;
             }
 
             const newChart = new Chart(ctx, config);
