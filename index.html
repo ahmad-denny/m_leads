@@ -517,7 +517,7 @@
 
         // --- Charting ---
         function updateCharts() {
-            // 1. Performance by Position
+            // 1. Performance by Position (Tetap sama)
             const posGroups = {};
             filteredData.forEach(d => {
                 if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
@@ -531,19 +531,19 @@
 
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
-            // 2. Top 5 Performers (by Booking)
-            // LOGIKA BARU:
-            // 1. Sort Descending (Terbesar dulu) -> [Rank 1, Rank 2, ..., Rank 5]
+            // 2. Top 5 Performers (PERBAIKAN LOGIKA UTAMA DI SINI)
+            
+            // Langkah A: Sortir data dari TERBESAR ke TERKECIL (Descending)
+            // Sehingga index 0 adalah pemenang (Booking terbanyak)
             const sortedDesc = [...filteredData]
                 .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0));
             
-            // 2. Ambil 5 teratas
+            // Langkah B: Ambil 5 teratas
             const top5 = sortedDesc.slice(0, 5);
 
-            // 3. Kita biarkan urutan array tetap [Rank 1, ..., Rank 5]
-            //    Lalu kita gunakan opsi 'reverse: true' di Chart.js Y-Axis
-            //    Agar Rank 1 (index 0) dipaksa naik ke atas.
-
+            // Langkah C: Siapkan data array
+            // Karena kita akan pakai reverse: true di chart options, 
+            // maka array harus urut [Rank 1, Rank 2, ..., Rank 5]
             const perfLabels = top5.map(d => d['Marketing Name']);
             const perfLeads = top5.map(d => d.Jlh_Leads || 0);
             const perfBooking = top5.map(d => d.Jlh_Leads_Booking || 0);
@@ -632,8 +632,8 @@
                         },
                         y: { 
                             stacked: false,
-                            // INI KUNCINYA:
-                            // Jika horizontal, reverse sumbu Y agar index 0 (terbesar) ada di ATAS
+                            // PENTING: reverse: true akan memaksa item pertama di array (Rank 1) 
+                            // untuk muncul di posisi PALING ATAS grafik horizontal.
                             reverse: isHorizontal ? true : false,
                             ticks: { 
                                 display: isHorizontal, 
@@ -658,7 +658,7 @@
             if (canvasId === 'chartPosition') chartPosInstance = newChart;
             else chartPerfInstance = newChart;
         }
-
+        
         // --- Table Rendering ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
