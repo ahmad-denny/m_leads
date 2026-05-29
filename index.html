@@ -23,9 +23,8 @@
         }
     </script>
     
-    <!-- Chart.js v3.9.1 + DataLabels Plugin -->
+    <!-- Chart.js TANPA PLUGIN DATALABELS -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -274,8 +273,6 @@
         let currentSortKey = '';
         let isNameFiltered = false;
 
-        Chart.register(ChartDataLabels);
-
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setupTheme();
@@ -478,7 +475,7 @@
 
         // --- CHARTING DENGAN LOGIKA YANG SUDAH TERBUKTI ---
         function updateCharts() {
-            // 1. Performance by Position (tetap sama)
+            // 1. Performance by Position
             const posGroups = {};
             filteredData.forEach(d => {
                 if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
@@ -492,20 +489,19 @@
 
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, false);
 
-            // 2. Top 5 Performers - SOLUSI TERAKHIR
-            // Sort DESCENDING, ambil 5 teratas, JANGAN REVERSE ARRAY
+            // 2. Top 5 Performers - SORT DESCENDING, JANGAN REVERSE ARRAY
             const top5 = [...filteredData]
                 .sort((a, b) => (Number(b.Jlh_Leads_Booking) || 0) - (Number(a.Jlh_Leads_Booking) || 0))
                 .slice(0, 5);
 
-            // JANGAN REVERSE ARRAY DI SINI!
             const perfLabels = top5.map(d => d['Marketing Name']);
             const perfLeads = top5.map(d => Number(d.Jlh_Leads) || 0);
             const perfBooking = top5.map(d => Number(d.Jlh_Leads_Booking) || 0);
 
             renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, true);
         }
-                function renderBarChart(canvasId, labels, dataLeads, dataBooking, isHorizontal = false) {
+
+        function renderBarChart(canvasId, labels, dataLeads, dataBooking, isHorizontal = false) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
             if (canvasId === 'chartPosition') {
@@ -527,38 +523,20 @@
                             data: dataLeads,
                             backgroundColor: 'rgba(59, 130, 246, 0.7)',
                             borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1,
-                            datalabels: {
-                                anchor: 'end',
-                                align: 'end', 
-                                color: textColor,
-                                font: { weight: 'bold', size: 10 },
-                                formatter: Math.round
-                            }
+                            borderWidth: 1
                         },
                         {
                             label: 'Booking',
                             data: dataBooking,
                             backgroundColor: 'rgba(239, 68, 68, 0.7)',
                             borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1,
-                            datalabels: {
-                                anchor: 'end',
-                                align: 'end', 
-                                color: textColor,
-                                font: { weight: 'bold', size: 10 },
-                                formatter: Math.round,
-                                display: true
-                            }
+                            borderWidth: 1
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     indexAxis: isHorizontal ? 'y' : 'x',
-                    layout: {
-                        padding: isHorizontal ? { left: 10, right: 30 } : { top: 20 } 
-                    },
                     plugins: {
                         legend: { 
                             position: 'top',
@@ -568,9 +546,7 @@
                                 pointStyle: 'circle',
                                 font: { size: 10 } 
                             }
-                        },
-                        title: { display: false },
-                        datalabels: { display: true }
+                        }
                     },
                     scales: {
                         x: { 
@@ -584,32 +560,14 @@
                         },
                         y: { 
                             stacked: false,
-                            // TIDAK ADA reverse: true DI SINI
+                            // KUNCI UTAMA: REVERSE SUMBU Y UNTUK CHART PERFORMERS
+                            reverse: isHorizontal ? true : false,
                             ticks: { 
                                 display: isHorizontal, 
                                 color: textColor,
                                 font: { size: 10 }
                             },
                             grid: { display: false } 
-                        }
-                    },
-                    // TAMBAHAN: Callback setelah chart selesai dirender
-                    onComplete: function() {
-                        if (isHorizontal && canvasId === 'chartPerformers') {
-                            // Ambil container chart
-                            const chartContainer = this.canvas.closest('.bg-white, .dark\\:bg-darkcard');
-                            if (!chartContainer) return;
-                            
-                            // Ambil semua elemen label Y (nama-nama performer)
-                            const yAxisLabels = chartContainer.querySelectorAll('.chartjs-render-monitor + div div div div span');
-                            
-                            // Jika ada label, balik urutannya
-                            if (yAxisLabels.length > 0) {
-                                const parent = yAxisLabels[0].parentNode.parentNode;
-                                for (let i = parent.children.length - 1; i >= 0; i--) {
-                                    parent.appendChild(parent.children[i]);
-                                }
-                            }
                         }
                     }
                 }
@@ -624,9 +582,7 @@
 
             if (canvasId === 'chartPosition') chartPosInstance = newChart;
             else chartPerfInstance = newChart;
-        }
-
-        
+        }        
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
