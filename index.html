@@ -290,7 +290,7 @@
         let filteredData = [];
         let chartPosInstance = null;
         let chartPerfInstance = null;
-        let sortDirection = 1; // 1 for asc, -1 for desc
+        let sortDirection = 1; 
         let currentSortKey = '';
         let isNameFiltered = false;
 
@@ -326,21 +326,25 @@
                     for (const key in item) {
                         const cleanKey = key.trim();
                         let val = item[key];
-                        if (typeof val === 'string') {
-                            val = val.trim();
-                            if (!isNaN(val) && val !== '') {
-                                val = parseInt(val, 10);
-                            } else if (val === '-' || val === '-    ') {
-                                val = 0;
+                        
+                        // KONVERSI EKSPLESIT KE NUMBER UNTUK KOLOM ANGKA
+                        if (cleanKey.includes('Jlh_') || cleanKey === 'NIK') {
+                            if (typeof val === 'string') {
+                                val = val.replace(/,/g, '').trim(); // Hapus koma jika ada
+                                val = val === '-' || val === '' ? 0 : parseInt(val, 10);
                             }
+                            if (isNaN(val)) val = 0;
+                        } else {
+                            if (typeof val === 'string') val = val.trim();
                         }
+                        
                         cleanItem[cleanKey] = val;
                     }
                     return cleanItem;
                 });
 
                 populateDropdowns();
-                applyFilters(); // Initial render
+                applyFilters(); 
 
             } catch (error) {
                 console.error("Error loading JSON:", error);
@@ -428,23 +432,16 @@
             document.getElementById('filterInput').value = '';
             isNameFiltered = false;
             applyFilters();
-            // Scroll to summary again
             document.getElementById('summarySection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- Click Name to Filter ---
         function filterByName(name) {
             document.getElementById('filterInput').value = name;
             isNameFiltered = true;
-            
-            // Reset other filters to ensure we see all data for this person
             document.getElementById('filterPeriod').value = '';
             document.getElementById('filterPosition').value = '';
             document.getElementById('filterBranch').value = '';
-            
             applyFilters();
-            
-            // Scroll to summary section smoothly
             document.getElementById('summarySection').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -455,7 +452,6 @@
             renderTable();
         }
 
-        // --- Animation Function ---
         function animateValue(obj, start, end, duration) {
             let startTimestamp = null;
             const step = (timestamp) => {
@@ -470,7 +466,7 @@
         }
 
         function updateSummaryCards() {
-            const sum = (key) => filteredData.reduce((acc, curr) => acc + (curr[key] || 0), 0);
+            const sum = (key) => filteredData.reduce((acc, curr) => acc + (Number(curr[key]) || 0), 0);
             const uniqueNiks = new Set(filteredData.map(d => d.NIK));
             
             const totalLeads = sum('Jlh_Leads');
@@ -478,11 +474,6 @@
             const totalInt = sum('Jlh_Leads_Interested');
             const totalBook = sum('Jlh_Leads_Booking');
 
-            // Calculate Percentages according to specific logic:
-            // % FU = FU / Leads
-            // % Int = Int / FU
-            // % Book = Book / Int
-            
             const safeDivide = (num, denom) => {
                 if (!denom || denom === 0) return 0;
                 return (num / denom) * 100;
@@ -492,7 +483,6 @@
             const percInt = safeDivide(totalInt, totalFU).toFixed(1) + '%';
             const percBook = safeDivide(totalBook, totalInt).toFixed(1) + '%';
 
-            // Update Numbers
             const targets = [
                 { id: 'sumTeam', val: uniqueNiks.size },
                 { id: 'sumLeads', val: totalLeads },
@@ -509,20 +499,19 @@
                 }
             });
 
-            // Update Percentages Text
             document.getElementById('percFU').innerText = `(${percFU})`;
             document.getElementById('percInterest').innerText = `(${percInt})`;
             document.getElementById('percBooking').innerText = `(${percBook})`;
         }
 
-        // --- Charting ---
+        // --- Charting (PERBAIKAN UTAMA DI SINI) ---
         function updateCharts() {
-            // 1. Performance by Position (Tetap sama)
+            // 1. Performance by Position
             const posGroups = {};
             filteredData.forEach(d => {
                 if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
-                posGroups[d.Position].leads += (d.Jlh_Leads || 0);
-                posGroups[d.Position].booking += (d.Jlh_Leads_Booking || 0);
+                posGroups[d.Position].leads += (Number(d.Jlh_Leads) || 0);
+                posGroups[d.Position].booking += (Number(d.Jlh_Leads_Booking) || 0);
             });
 
             const posLabels = Object.keys(posGroups);
@@ -531,22 +520,27 @@
 
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
-            // 2. Top 5 Performers (PERBAIKAN LOGIKA UTAMA DI SINI)
+            // 2. Top 5 Performers (LOGIKA BARU YANG LEBIH KUAT)
             
-            // Langkah A: Sortir data dari TERBESAR ke TERKECIL (Descending)
-            // Sehingga index 0 adalah pemenang (Booking terbanyak)
-            const sortedDesc = [...filteredData]
-                .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0));
+            // Langkah 1: Sortir DESCENDING (Terbesar -> Terkecil)
+            // Kita paksa konversi ke Number agar sorting matematika benar
+            const sortedDesc = [...filteredData].sort((a, b) => {
+                const valA = Number(a.Jlh_Leads_Booking) || 0;
+                const valB = Number(b.Jlh_Leads_Booking) || 0;
+                return valB - valA; // B - A untuk Descending
+            });
             
-            // Langkah B: Ambil 5 teratas
+            // Langkah 2: Ambil 5 teratas
             const top5 = sortedDesc.slice(0, 5);
 
-            // Langkah C: Siapkan data array
-            // Karena kita akan pakai reverse: true di chart options, 
-            // maka array harus urut [Rank 1, Rank 2, ..., Rank 5]
+            // Debugging: Cek siapa saja yang masuk top 5 di console browser
+            console.log("Top 5 Data:", top5.map(p => ({ name: p['Marketing Name'], booking: p.Jlh_Leads_Booking })));
+
+            // Langkah 3: Siapkan Array
+            // Karena kita pakai reverse: true di chart, array harus [Rank 1, Rank 2, ...]
             const perfLabels = top5.map(d => d['Marketing Name']);
-            const perfLeads = top5.map(d => d.Jlh_Leads || 0);
-            const perfBooking = top5.map(d => d.Jlh_Leads_Booking || 0);
+            const perfLeads = top5.map(d => Number(d.Jlh_Leads) || 0);
+            const perfBooking = top5.map(d => Number(d.Jlh_Leads_Booking) || 0);
 
             renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 5 Staff by Booking', true);
         }
@@ -616,30 +610,22 @@
                             }
                         },
                         title: { display: false },
-                        datalabels: {
-                            display: true
-                        }
+                        datalabels: { display: true }
                     },
                     scales: {
                         x: { 
                             stacked: false,
-                            ticks: { 
-                                display: !isHorizontal, 
-                                color: textColor,
-                                font: { size: 10 }
-                            },
+                            ticks: { display: !isHorizontal, color: textColor, font: { size: 10 } },
                             grid: { display: false } 
                         },
                         y: { 
                             stacked: false,
-                            // PENTING: reverse: true akan memaksa item pertama di array (Rank 1) 
-                            // untuk muncul di posisi PALING ATAS grafik horizontal.
+                            // KUNCI PERBAIKAN: Reverse Sumbu Y agar Index 0 (Rank 1) ada di ATAS
                             reverse: isHorizontal ? true : false,
                             ticks: { 
                                 display: isHorizontal, 
                                 color: textColor,
-                                font: { size: 10 },
-                                display: true
+                                font: { size: 10 }
                             },
                             grid: { display: false } 
                         }
@@ -647,7 +633,6 @@
                 }
             };
 
-            // Special override for Position Chart to ensure NO numbers on axes
             if (!isHorizontal) {
                 config.options.scales.x.ticks.display = false;
                 config.options.scales.y.ticks.display = false;
@@ -658,7 +643,7 @@
             if (canvasId === 'chartPosition') chartPosInstance = newChart;
             else chartPerfInstance = newChart;
         }
-        
+
         // --- Table Rendering ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
@@ -668,12 +653,9 @@
             filteredData.forEach(row => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 transition";
-                
-                // Clickable Row Logic -> Filter by Name
                 tr.onclick = () => filterByName(row['Marketing Name']);
                 tr.style.cursor = 'pointer';
 
-                // Compact Mobile Font: text-xs on mobile, text-sm on desktop
                 tr.innerHTML = `
                     <td class="hidden">${row.NIK}</td>
                     <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm font-medium text-primary clickable-name">${row['Marketing Name']}</td>
@@ -701,6 +683,7 @@
                 let valA = a[key];
                 let valB = b[key];
 
+                // Pastikan perbandingan angka dilakukan sebagai angka
                 if (typeof valA === 'number' && typeof valB === 'number') {
                     return (valA - valB) * sortDirection;
                 } else {
