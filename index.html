@@ -24,7 +24,7 @@
     </script>
     
     <!-- ApexCharts v3.49.0 - Versi Stabil Terbaru -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>    
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
     
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -476,7 +476,7 @@
             // 1. Performance by Position
             const posGroups = {};
             filteredData.forEach(d => {
-                const position = d.Position || 'Unknown'; // Handle null/undefined
+                const position = d.Position || 'Unknown';
                 if (!posGroups[position]) {
                     posGroups[position] = { leads: 0, booking: 0 };
                 }
@@ -488,17 +488,23 @@
             const posLeadsData = posLabels.map(k => posGroups[k].leads);
             const posBookingData = posLabels.map(k => posGroups[k].booking);
 
-            // Debugging: Cek apakah ada data
-            console.log("Position Chart Data:", {
-                labels: posLabels,
-                leads: posLeadsData,
-                booking: posBookingData
-            });
+            // DEBUGGING DETAIL
+            console.log("=== POSITION CHART DEBUG ===");
+            console.log("posLabels:", posLabels);
+            console.log("posLeadsData:", posLeadsData);
+            console.log("posBookingData:", posBookingData);
+            console.log("filteredData length:", filteredData.length);
+            console.log("===========================");
 
             // Validasi ketat sebelum render
-            if (posLabels.length > 0 && posLeadsData.every(n => !isNaN(n)) && posBookingData.every(n => !isNaN(n))) {
+            if (posLabels.length > 0 && 
+                posLeadsData.every(n => typeof n === 'number' && !isNaN(n)) && 
+                posBookingData.every(n => typeof n === 'number' && !isNaN(n))) {
+                
+                console.log("Rendering Position Chart...");
                 renderApexChart('chartPosition', posLabels, posLeadsData, posBookingData, false);
             } else {
+                console.warn("No valid position data to render");
                 document.querySelector("#chartPosition").innerHTML = 
                     '<div class="flex items-center justify-center h-[350px] text-gray-500">No position data available</div>';
             }
@@ -513,14 +519,18 @@
             const bookingData = top5.map(d => Number(d.Jlh_Leads_Booking) || 0);
 
             // Validasi ketat sebelum render
-            if (categories.length > 0 && leadsData.every(n => !isNaN(n)) && bookingData.every(n => !isNaN(n))) {
+            if (categories.length > 0 && 
+                leadsData.every(n => typeof n === 'number' && !isNaN(n)) && 
+                bookingData.every(n => typeof n === 'number' && !isNaN(n))) {
+                
+                console.log("Rendering Performers Chart...");
                 renderApexChart('chartPerformers', categories, leadsData, bookingData, true);
             } else {
+                console.warn("No valid performer data to render");
                 document.querySelector("#chartPerformers").innerHTML = 
                     '<div class="flex items-center justify-center h-[350px] text-gray-500">No performer data available</div>';
             }
         }
-
         function renderApexChart(elementId, categories, leadsData, bookingData, isHorizontal = false) {
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
@@ -545,31 +555,19 @@
                 chart: {
                     type: 'bar',
                     height: 350,
-                    toolbar: { show: false },
-                    animations: {
-                        enabled: true,
-                        easing: 'easeinout',
-                        speed: 800
-                    }
+                    toolbar: { show: false }
                 },
                 plotOptions: {
                     bar: {
                         horizontal: isHorizontal,
-                        distributed: false,
-                        borderRadius: 4,
-                        dataLabels: {
-                            position: isHorizontal ? 'top' : 'center'
-                        }
+                        borderRadius: 4
                     }
                 },
                 dataLabels: {
                     enabled: true,
-                    offsetX: isHorizontal ? -6 : 0,
-                    offsetY: isHorizontal ? 0 : -10,
                     style: {
                         fontSize: '10px',
-                        colors: [textColor],
-                        fontWeight: 'bold'
+                        colors: [textColor]
                     },
                     formatter: function(val) {
                         return Math.round(val);
@@ -581,15 +579,6 @@
                         style: {
                             colors: textColor,
                             fontSize: '10px'
-                        },
-                        rotate: isHorizontal ? 0 : -45,
-                        trim: true
-                    },
-                    title: {
-                        text: isHorizontal ? '' : 'Position',
-                        style: {
-                            color: textColor,
-                            fontSize: '12px'
                         }
                     }
                 },
@@ -599,32 +588,18 @@
                             colors: textColor,
                             fontSize: '10px'
                         }
-                    },
-                    title: {
-                        text: isHorizontal ? '' : 'Count',
-                        style: {
-                            color: textColor,
-                            fontSize: '12px'
-                        }
                     }
                 },
                 legend: {
                     position: 'top',
-                    horizontalAlign: 'center',
                     labels: {
                         colors: textColor
                     }
                 },
                 tooltip: {
-                    theme: isDark ? 'dark' : 'light',
-                    shared: true,
-                    intersect: false
+                    theme: isDark ? 'dark' : 'light'
                 },
-                grid: {
-                    borderColor: isDark ? '#2d3748' : '#e2e8f0',
-                    strokeDashArray: 4
-                },
-                colors: ['#3b82f6', '#10b981'] // Blue for Leads, Green for Booking
+                colors: ['#3b82f6', '#10b981']
             };
 
             // Hapus chart lama jika ada
@@ -636,13 +611,14 @@
             try {
                 var chart = new ApexCharts(document.querySelector("#" + elementId), options);
                 chart.render();
+                console.log(`Chart ${elementId} rendered successfully`);
             } catch (error) {
-                console.error("Error rendering chart:", error);
+                console.error(`Error rendering chart ${elementId}:`, error);
                 document.querySelector("#" + elementId).innerHTML = 
-                    '<div class="flex items-center justify-center h-[350px] text-red-500">Chart render failed</div>';
+                    '<div class="flex items-center justify-center h-[350px] text-red-500">Chart render failed: ' + error.message + '</div>';
             }
         }
-
+        
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
