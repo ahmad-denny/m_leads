@@ -505,48 +505,42 @@
         }
 
         // --- Charting (SOLUSI FINAL) ---
-        function updateCharts() {
-            // 1. Performance by Position (Tetap sama)
+                function updateCharts() {
+            // ... (Kode chart Position tetap sama) ...
             const posGroups = {};
             filteredData.forEach(d => {
                 if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
                 posGroups[d.Position].leads += (Number(d.Jlh_Leads) || 0);
                 posGroups[d.Position].booking += (Number(d.Jlh_Leads_Booking) || 0);
             });
-
             const posLabels = Object.keys(posGroups);
             const posLeadsData = posLabels.map(k => posGroups[k].leads);
             const posBookingData = posLabels.map(k => posGroups[k].booking);
-
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
-            // 2. Top 5 Performers (LOGIKA FINAL)
+            // 2. Top 5 Performers (SOLUSI NUCLEAR OPTION)
             
-            // Langkah A: Sortir DESCENDING (Terbesar -> Terkecil)
-            const sortedDesc = [...filteredData].sort((a, b) => {
+            // Langkah 1: Sortir ASCENDING (Terkecil -> Terbesar)
+            const sortedAsc = [...filteredData].sort((a, b) => {
                 const valA = Number(a.Jlh_Leads_Booking) || 0;
                 const valB = Number(b.Jlh_Leads_Booking) || 0;
-                return valB - valA; 
+                return valA - valB; // A - B untuk Ascending
             });
             
-            // Langkah B: Ambil 5 teratas
-            // Hasil: [Riza(4), Arief(3), Faisal(2), Ziqri(1), Maulana(1)]
-            const top5 = sortedDesc.slice(0, 5);
+            // Langkah 2: Ambil 5 TERAKHIR (karena yang terbesar ada di ujung array ascending)
+            // Hasil slice(-5): [Maulana(1), Ziqri(1), Faisal(2), Arief(3), Riza(4)]
+            const top5Asc = sortedAsc.slice(-5);
 
-            // Langkah C: REVERSE ARRAY MANUAL
-            // Hasil: [Maulana(1), Ziqri(1), Faisal(2), Arief(3), Riza(4)]
-            // Ketika Chart.js merender ini tanpa opsi reverse:
-            // Index 0 (Maulana) akan di BAWAH.
-            // Index 4 (Riza) akan di ATAS.
-            const finalChartData = [...top5].reverse();
-
-            const perfLabels = finalChartData.map(d => d['Marketing Name']);
-            const perfLeads = finalChartData.map(d => Number(d.Jlh_Leads) || 0);
-            const perfBooking = finalChartData.map(d => Number(d.Jlh_Leads_Booking) || 0);
+            // Langkah 3: Kirim langsung ke chart TANPA reverse array dan TANPA reverse option
+            // Chart.js akan menaruh Index 0 (Maulana) di BAWAH
+            // Dan Index 4 (Riza) di ATAS
+            const perfLabels = top5Asc.map(d => d['Marketing Name']);
+            const perfLeads = top5Asc.map(d => Number(d.Jlh_Leads) || 0);
+            const perfBooking = top5Asc.map(d => Number(d.Jlh_Leads_Booking) || 0);
 
             renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 5 Staff by Booking', true);
         }
-
+        
         function renderBarChart(canvasId, labels, dataLeads, dataBooking, title, isHorizontal = false) {
             const ctx = document.getElementById(canvasId).getContext('2d');
             
