@@ -33,8 +33,8 @@
     <style>
         /* Custom Scrollbar for Table */
         .table-container::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
+            height: 6px;
+            width: 6px;
         }
         .table-container::-webkit-scrollbar-track {
             background: #f1f1f1; 
@@ -210,7 +210,7 @@
                 <canvas id="chartPosition"></canvas>
             </div>
             <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
-                <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4 border-b dark:border-gray-700 pb-2">Top 10 Performers (Booking)</h3>
+                <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4 border-b dark:border-gray-700 pb-2">Top 5 Performers (Booking)</h3>
                 <canvas id="chartPerformers"></canvas>
             </div>
         </div>
@@ -228,26 +228,29 @@
                             <!-- NIK Hidden on request -->
                             <th scope="col" class="hidden">NIK</th>
                             
-                            <th scope="col" class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Marketing Name')">
+                            <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Marketing Name')">
                                 Name <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 hidden md:table-cell" onclick="sortTable('Position')">
+                            <!-- Position Hidden on Mobile -->
+                            <th scope="col" class="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Position')">
                                 Position <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="px-4 md:px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 hidden lg:table-cell" onclick="sortTable('Branch')">
+                            <!-- Branch Hidden on Mobile/Tablet -->
+                            <th scope="col" class="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Branch')">
                                 Branch <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="px-4 md:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads')">
+                            <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads')">
                                 Leads <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="px-4 md:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 hidden sm:table-cell" onclick="sortTable('Jlh_Leads_FU')">
+                            <!-- FU Hidden on Small Mobile -->
+                            <th scope="col" class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_FU')">
                                 FU <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="px-4 md:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Interested')">
-                                Interest <i class="fas fa-sort ml-1"></i>
+                            <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Interested')">
+                                Int <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="px-4 md:px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Booking')">
-                                Booking <i class="fas fa-sort ml-1"></i>
+                            <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Booking')">
+                                Book <i class="fas fa-sort ml-1"></i>
                             </th>
                         </tr>
                     </thead>
@@ -449,10 +452,10 @@
 
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
-            // 2. Top 10 Performers (by Booking)
+            // 2. Top 5 Performers (by Booking) - Changed from 10 to 5
             const topPerformers = [...filteredData]
                 .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0))
-                .slice(0, 10);
+                .slice(0, 5); // Take top 5
 
             // Reverse to show highest at top for horizontal bar
             topPerformers.reverse();
@@ -461,7 +464,7 @@
             const perfLeads = topPerformers.map(d => d.Jlh_Leads || 0);
             const perfBooking = topPerformers.map(d => d.Jlh_Leads_Booking || 0);
 
-            renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 10 Staff by Booking', true);
+            renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 5 Staff by Booking', true);
         }
 
         function renderBarChart(canvasId, labels, dataLeads, dataBooking, title, isHorizontal = false) {
@@ -491,7 +494,7 @@
                                 anchor: 'end',
                                 align: 'top',
                                 color: textColor,
-                                font: { weight: 'bold' }
+                                font: { weight: 'bold', size: 10 }
                             }
                         },
                         {
@@ -504,7 +507,7 @@
                                 anchor: 'end',
                                 align: 'top',
                                 color: textColor,
-                                font: { weight: 'bold' }
+                                font: { weight: 'bold', size: 10 }
                             }
                         }
                     ]
@@ -515,7 +518,11 @@
                     plugins: {
                         legend: { 
                             position: 'top',
-                            labels: { color: textColor }
+                            labels: { 
+                                color: textColor,
+                                boxWidth: 10,
+                                font: { size: 10 } // Smaller Legend Font
+                            }
                         },
                         title: { display: false },
                         datalabels: {
@@ -525,12 +532,20 @@
                     scales: {
                         x: { 
                             stacked: false,
-                            ticks: { color: textColor },
+                            ticks: { 
+                                color: textColor,
+                                font: { size: 10 }
+                            },
                             grid: { display: false } // Hide Grid
                         },
                         y: { 
                             stacked: false,
-                            ticks: { color: textColor },
+                            ticks: { 
+                                color: textColor,
+                                font: { size: 10 },
+                                // Hide Y Axis Labels for Position Chart if vertical, or X if horizontal
+                                display: !isHorizontal // If vertical bar (Position), hide Y labels. If horizontal (Performers), show Y labels (Names)
+                            },
                             grid: { display: false } // Hide Grid
                         }
                     }
@@ -557,15 +572,16 @@
                 tr.onclick = () => filterByName(row['Marketing Name']);
                 tr.style.cursor = 'pointer';
 
+                // Compact Mobile Font: text-xs on mobile, text-sm on desktop
                 tr.innerHTML = `
                     <td class="hidden">${row.NIK}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm font-medium text-primary clickable-name">${row['Marketing Name']}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden md:table-cell">${row.Position}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden lg:table-cell">${row.Branch}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-right font-bold">${row.Jlh_Leads}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-right hidden sm:table-cell">${row.Jlh_Leads_FU}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-right text-green-600 dark:text-green-400">${row.Jlh_Leads_Interested}</td>
-                    <td class="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400 font-bold">${row.Jlh_Leads_Booking}</td>
+                    <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm font-medium text-primary clickable-name">${row['Marketing Name']}</td>
+                    <td class="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400">${row.Position}</td>
+                    <td class="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400">${row.Branch}</td>
+                    <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right font-bold">${row.Jlh_Leads}</td>
+                    <td class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right">${row.Jlh_Leads_FU}</td>
+                    <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right text-green-600 dark:text-green-400">${row.Jlh_Leads_Interested}</td>
+                    <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right text-blue-600 dark:text-blue-400 font-bold">${row.Jlh_Leads_Booking}</td>
                 `;
                 tbody.appendChild(tr);
             });
