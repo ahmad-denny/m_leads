@@ -165,7 +165,7 @@
         </div>
 
         <!-- Filters Section (Compact Mobile Layout) -->
-        <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
+        <div id="mainFilters" class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow transition-all duration-300">
             <!-- Mobile: 2 columns, Desktop: 5 columns -->
             <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 items-end">
                 
@@ -395,14 +395,19 @@
 
         function updateActiveFilterBanner() {
             const banner = document.getElementById('activeFilterBanner');
+            const mainFilters = document.getElementById('mainFilters');
             const nameVal = document.getElementById('filterInput').value;
             const nameDisplay = document.getElementById('activeFilterName');
             
             if (nameVal.length > 0) {
+                // Show Banner, Hide Main Filters
                 banner.classList.remove('hidden');
+                mainFilters.classList.add('hidden');
                 nameDisplay.textContent = nameVal;
             } else {
+                // Hide Banner, Show Main Filters
                 banner.classList.add('hidden');
+                mainFilters.classList.remove('hidden');
             }
         }
 
@@ -536,9 +541,9 @@
                             borderColor: 'rgba(59, 130, 246, 1)',
                             borderWidth: 1,
                             datalabels: {
-                                anchor: 'end',
-                                align: 'top', // For vertical bars
-                                color: textColor,
+                                anchor: 'center', // Inside the bar
+                                align: 'center', // Centered
+                                color: '#ffffff', // White text for contrast inside bar
                                 font: { weight: 'bold', size: 10 },
                                 formatter: Math.round
                             }
@@ -550,9 +555,9 @@
                             borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 1,
                             datalabels: {
-                                anchor: 'end',
-                                align: 'top', // For vertical bars
-                                color: textColor,
+                                anchor: 'center', // Inside the bar
+                                align: 'center', // Centered
+                                color: '#ffffff', // White text for contrast inside bar
                                 font: { weight: 'bold', size: 10 },
                                 formatter: Math.round
                             }
