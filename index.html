@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Leads Dashboard</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#64748b',
+                        darkbg: '#0f172a',
+                        darkcard: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Custom Scrollbar for Table */
+        .table-container::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        .dark .table-container::-webkit-scrollbar-track {
+            background: #2d3748; 
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #888; 
+            border-radius: 4px;
+        }
+        .table-container::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        
+        /* Smooth transitions */
+        body { transition: background-color 0.3s, color 0.3s; }
+        .card { transition: transform 0.2s; }
+        .card:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-darkbg dark:text-gray-200 min-h-screen font-sans">
+
+    <!-- Navbar / Header -->
+    <nav class="bg-white dark:bg-darkcard shadow-md p-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-primary"><i class="fas fa-chart-line mr-2"></i>Sales Performance Dashboard</h1>
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                <i class="fas fa-moon dark:hidden"></i>
+                <i class="fas fa-sun hidden dark:inline text-yellow-400"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mx-auto p-4 space-y-6">
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Card 1 -->
+            <div class="card bg-white dark:bg-darkcard p-4 rounded-lg shadow border-l-4 border-blue-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Team Sales</p>
+                        <h2 class="text-2xl font-bold" id="sumTeam">0</h2>
+                    </div>
+                    <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full text-blue-600 dark:text-blue-300">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="card bg-white dark:bg-darkcard p-4 rounded-lg shadow border-l-4 border-purple-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Leads Injected</p>
+                        <h2 class="text-2xl font-bold" id="sumLeads">0</h2>
+                    </div>
+                    <div class="p-3 bg-purple-100 dark:bg-purple-900 rounded-full text-purple-600 dark:text-purple-300">
+                        <i class="fas fa-database"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="card bg-white dark:bg-darkcard p-4 rounded-lg shadow border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Follow Up</p>
+                        <h2 class="text-2xl font-bold" id="sumFU">0</h2>
+                    </div>
+                    <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full text-yellow-600 dark:text-yellow-300">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 4 -->
+            <div class="card bg-white dark:bg-darkcard p-4 rounded-lg shadow border-l-4 border-green-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Interested</p>
+                        <h2 class="text-2xl font-bold" id="sumInterest">0</h2>
+                    </div>
+                    <div class="p-3 bg-green-100 dark:bg-green-900 rounded-full text-green-600 dark:text-green-300">
+                        <i class="fas fa-thumbs-up"></i>
+                    </div>
+                </div>
+            </div>
+            <!-- Card 5 -->
+            <div class="card bg-white dark:bg-darkcard p-4 rounded-lg shadow border-l-4 border-red-500">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Total Booking</p>
+                        <h2 class="text-2xl font-bold" id="sumBooking">0</h2>
+                    </div>
+                    <div class="p-3 bg-red-100 dark:bg-red-900 rounded-full text-red-600 dark:text-red-300">
+                        <i class="fas fa-file-signature"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters Section -->
+        <div class="bg-white dark:bg-darkcard p-4 rounded-lg shadow">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                
+                <!-- Input NIK/Name -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">NIK / Marketing Name</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fas fa-search"></i>
+                        </span>
+                        <input type="text" id="filterInput" placeholder="Cari..." class="w-full pl-10 pr-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                    </div>
+                </div>
+
+                <!-- Select Period -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Period</label>
+                    <select id="filterPeriod" class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Periods</option>
+                    </select>
+                </div>
+
+                <!-- Select Position -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Position</label>
+                    <select id="filterPosition" class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Positions</option>
+                    </select>
+                </div>
+
+                <!-- Select Branch -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">Branch</label>
+                    <select id="filterBranch" class="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Branches</option>
+                    </select>
+                </div>
+
+                <!-- Reset Button -->
+                <div>
+                    <button id="btnReset" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded transition flex justify-center items-center">
+                        <i class="fas fa-undo mr-2"></i> Reset Filter
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white dark:bg-darkcard p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4 border-b dark:border-gray-700 pb-2">Performance by Position</h3>
+                <canvas id="chartPosition"></canvas>
+            </div>
+            <div class="bg-white dark:bg-darkcard p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold mb-4 border-b dark:border-gray-700 pb-2">Top 10 Performers (Booking)</h3>
+                <canvas id="chartPerformers"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="bg-white dark:bg-darkcard rounded-lg shadow overflow-hidden">
+            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                <h3 class="text-lg font-semibold">Detailed Data</h3>
+                <span class="text-sm text-gray-500" id="rowCount">Showing 0 rows</span>
+            </div>
+            <div class="table-container overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Marketing Name')">
+                                Name <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('NIK')">
+                                NIK <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Position')">
+                                Position <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Branch')">
+                                Branch <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads')">
+                                Leads <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_FU')">
+                                FU <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Interested')">
+                                Interest <i class="fas fa-sort ml-1"></i>
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Booking')">
+                                Booking <i class="fas fa-sort ml-1"></i>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody" class="bg-white dark:bg-darkcard divide-y divide-gray-200 dark:divide-gray-700">
+                        <!-- Rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Global Variables ---
+        let rawData = [];
+        let filteredData = [];
+        let chartPosInstance = null;
+        let chartPerfInstance = null;
+        let sortDirection = 1; // 1 for asc, -1 for desc
+        let currentSortKey = '';
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadData();
+            setupTheme();
+            
+            // Event Listeners for Filters
+            document.getElementById('filterInput').addEventListener('input', applyFilters);
+            document.getElementById('filterPeriod').addEventListener('change', applyFilters);
+            document.getElementById('filterPosition').addEventListener('change', applyFilters);
+            document.getElementById('filterBranch').addEventListener('change', applyFilters);
+            document.getElementById('btnReset').addEventListener('click', resetFilters);
+        });
+
+        // --- Data Loading ---
+        async function loadData() {
+            try {
+                const response = await fetch('dataleads.json');
+                const json = await response.json();
+                
+                // Clean Data: Trim keys and values, parse numbers
+                rawData = json.leads.map(item => {
+                    const cleanItem = {};
+                    for (const key in item) {
+                        const cleanKey = key.trim();
+                        let val = item[key];
+                        if (typeof val === 'string') {
+                            val = val.trim();
+                            // Check if it's a number string
+                            if (!isNaN(val) && val !== '') {
+                                val = parseInt(val, 10);
+                            } else if (val === '-') {
+                                val = 0; // Treat dash as 0
+                            }
+                        }
+                        cleanItem[cleanKey] = val;
+                    }
+                    return cleanItem;
+                });
+
+                populateDropdowns();
+                applyFilters(); // Initial render
+
+            } catch (error) {
+                console.error("Error loading JSON:", error);
+                alert("Gagal memuat dataleads.json. Pastikan file berada di folder yang sama.");
+            }
+        }
+
+        // --- Dropdown Population ---
+        function populateDropdowns() {
+            const periods = [...new Set(rawData.map(d => d.Period))].sort();
+            const positions = [...new Set(rawData.map(d => d.Position))].sort();
+            const branches = [...new Set(rawData.map(d => d.Branch))].sort();
+
+            fillSelect('filterPeriod', periods);
+            fillSelect('filterPosition', positions);
+            fillSelect('filterBranch', branches);
+        }
+
+        function fillSelect(id, options) {
+            const select = document.getElementById(id);
+            options.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt;
+                option.textContent = opt;
+                select.appendChild(option);
+            });
+        }
+
+        // --- Filtering Logic ---
+        function applyFilters() {
+            const inputVal = document.getElementById('filterInput').value.toLowerCase();
+            const periodVal = document.getElementById('filterPeriod').value;
+            const posVal = document.getElementById('filterPosition').value;
+            const branchVal = document.getElementById('filterBranch').value;
+
+            filteredData = rawData.filter(item => {
+                // Text Search (NIK or Name)
+                const matchText = 
+                    (item.NIK && item.NIK.toString().toLowerCase().includes(inputVal)) ||
+                    (item['Marketing Name'] && item['Marketing Name'].toLowerCase().includes(inputVal));
+
+                // Dropdown Filters
+                const matchPeriod = periodVal ? item.Period === periodVal : true;
+                const matchPos = posVal ? item.Position === posVal : true;
+                const matchBranch = branchVal ? item.Branch === branchVal : true;
+
+                return matchText && matchPeriod && matchPos && matchBranch;
+            });
+
+            updateDashboard();
+        }
+
+        function resetFilters() {
+            document.getElementById('filterInput').value = '';
+            document.getElementById('filterPeriod').value = '';
+            document.getElementById('filterPosition').value = '';
+            document.getElementById('filterBranch').value = '';
+            applyFilters();
+        }
+
+        // --- Dashboard Updates ---
+        function updateDashboard() {
+            updateSummaryCards();
+            updateCharts();
+            renderTable();
+        }
+
+        function updateSummaryCards() {
+            const sum = (key) => filteredData.reduce((acc, curr) => acc + (curr[key] || 0), 0);
+            
+            // Total Team Sales = Count of unique NIKs in filtered data
+            const uniqueNiks = new Set(filteredData.map(d => d.NIK));
+            
+            document.getElementById('sumTeam').textContent = uniqueNiks.size;
+            document.getElementById('sumLeads').textContent = sum('Jlh_Leads');
+            document.getElementById('sumFU').textContent = sum('Jlh_Leads_FU');
+            document.getElementById('sumInterest').textContent = sum('Jlh_Leads_Interested');
+            document.getElementById('sumBooking').textContent = sum('Jlh_Leads_Booking');
+        }
+
+        // --- Charting ---
+        function updateCharts() {
+            // 1. Performance by Position
+            const posGroups = {};
+            filteredData.forEach(d => {
+                if (!posGroups[d.Position]) posGroups[d.Position] = { leads: 0, booking: 0 };
+                posGroups[d.Position].leads += (d.Jlh_Leads || 0);
+                posGroups[d.Position].booking += (d.Jlh_Leads_Booking || 0);
+            });
+
+            const posLabels = Object.keys(posGroups);
+            const posLeadsData = posLabels.map(k => posGroups[k].leads);
+            const posBookingData = posLabels.map(k => posGroups[k].booking);
+
+            renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position');
+
+            // 2. Top 10 Performers (by Booking)
+            // Sort filtered data by booking desc, take top 10
+            const topPerformers = [...filteredData]
+                .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0))
+                .slice(0, 10);
+
+            const perfLabels = topPerformers.map(d => d['Marketing Name']);
+            const perfLeads = topPerformers.map(d => d.Jlh_Leads || 0);
+            const perfBooking = topPerformers.map(d => d.Jlh_Leads_Booking || 0);
+
+            renderBarChart('chartPerformers', perfLabels, perfLeads, perfBooking, 'Top 10 Staff by Booking', true);
+        }
+
+        function renderBarChart(canvasId, labels, dataLeads, dataBooking, title, isHorizontal = false) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            // Destroy existing chart if exists
+            if (canvasId === 'chartPosition') {
+                if (chartPosInstance) chartPosInstance.destroy();
+            } else {
+                if (chartPerfInstance) chartPerfInstance.destroy();
+            }
+
+            const config = {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Leads Injected',
+                            data: dataLeads,
+                            backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Booking',
+                            data: dataBooking,
+                            backgroundColor: 'rgba(239, 68, 68, 0.7)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: isHorizontal ? 'y' : 'x',
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: false }
+                    },
+                    scales: {
+                        x: { stacked: false },
+                        y: { stacked: false }
+                    }
+                }
+            };
+
+            const newChart = new Chart(ctx, config);
+
+            if (canvasId === 'chartPosition') chartPosInstance = newChart;
+            else chartPerfInstance = newChart;
+        }
+
+        // --- Table Rendering ---
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            document.getElementById('rowCount').textContent = `Showing ${filteredData.length} rows`;
+
+            filteredData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 dark:hover:bg-gray-700 transition";
+                
+                // Clickable Row Logic (Clicking anywhere on row triggers action, but specifically Name/NIK as requested)
+                tr.onclick = () => alert(`Detail untuk:\nNama: ${row['Marketing Name']}\nNIK: ${row.NIK}\nBranch: ${row.Branch}`);
+                tr.style.cursor = 'pointer';
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-primary hover:underline">${row['Marketing Name']}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${row.NIK}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${row.Position}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${row.Branch}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-bold">${row.Jlh_Leads}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right">${row.Jlh_Leads_FU}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-green-600 dark:text-green-400">${row.Jlh_Leads_Interested}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-blue-600 dark:text-blue-400 font-bold">${row.Jlh_Leads_Booking}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- Sorting ---
+        function sortTable(key) {
+            if (currentSortKey === key) {
+                sortDirection *= -1; // Toggle direction
+            } else {
+                sortDirection = 1;
+                currentSortKey = key;
+            }
+
+            filteredData.sort((a, b) => {
+                let valA = a[key];
+                let valB = b[key];
+
+                // Handle numeric vs string
+                if (typeof valA === 'number' && typeof valB === 'number') {
+                    return (valA - valB) * sortDirection;
+                } else {
+                    valA = valA ? valA.toString().toLowerCase() : '';
+                    valB = valB ? valB.toString().toLowerCase() : '';
+                    if (valA < valB) return -1 * sortDirection;
+                    if (valA > valB) return 1 * sortDirection;
+                    return 0;
+                }
+            });
+
+            renderTable();
+        }
+
+        // --- Theme Toggle ---
+        function setupTheme() {
+            const themeToggle = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            
+            // Check local storage or system preference
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+
+            themeToggle.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                if (html.classList.contains('dark')) {
+                    localStorage.theme = 'dark';
+                } else {
+                    localStorage.theme = 'light';
+                }
+                // Re-render charts to update colors if necessary (Chart.js usually adapts, but good practice)
+                updateCharts(); 
+            });
+        }
+    </script>
+</body>
+</html>
