@@ -153,12 +153,13 @@
             </div>
         </div>
 
-        <!-- Filters Section -->
+        <!-- Filters Section (Compact Mobile Layout) -->
         <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 items-end">
+            <!-- Mobile: 2 columns, Desktop: 5 columns -->
+            <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 items-end">
                 
                 <!-- Input NIK/Name -->
-                <div>
+                <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">NIK / Name</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
@@ -169,15 +170,15 @@
                 </div>
 
                 <!-- Select Period -->
-                <div>
+                <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">Period</label>
                     <select id="filterPeriod" class="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">All Periods</option>
                     </select>
                 </div>
 
-                <!-- Select Position (With All RM & All CS) -->
-                <div>
+                <!-- Select Position -->
+                <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">Position</label>
                     <select id="filterPosition" class="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">All Positions</option>
@@ -187,15 +188,15 @@
                 </div>
 
                 <!-- Select Branch -->
-                <div>
+                <div class="col-span-1">
                     <label class="block text-xs md:text-sm font-medium mb-1">Branch</label>
                     <select id="filterBranch" class="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">All Branches</option>
                     </select>
                 </div>
 
-                <!-- Reset Button -->
-                <div>
+                <!-- Reset Button (Full width on mobile, auto on desktop) -->
+                <div class="col-span-2 md:col-span-2 lg:col-span-1">
                     <button id="btnReset" class="w-full bg-gray-500 hover:bg-gray-600 text-white text-sm font-bold py-2 px-4 rounded transition flex justify-center items-center">
                         <i class="fas fa-undo mr-2"></i> Reset
                     </button>
@@ -452,7 +453,7 @@
 
             renderBarChart('chartPosition', posLabels, posLeadsData, posBookingData, 'Leads vs Booking by Position', false);
 
-            // 2. Top 5 Performers (by Booking) - Changed from 10 to 5
+            // 2. Top 5 Performers (by Booking)
             const topPerformers = [...filteredData]
                 .sort((a, b) => (b.Jlh_Leads_Booking || 0) - (a.Jlh_Leads_Booking || 0))
                 .slice(0, 5); // Take top 5
@@ -533,18 +534,17 @@
                         x: { 
                             stacked: false,
                             ticks: { 
-                                color: textColor,
-                                font: { size: 10 }
+                                display: false, // Hide Numbers
+                                color: textColor
                             },
                             grid: { display: false } // Hide Grid
                         },
                         y: { 
                             stacked: false,
                             ticks: { 
+                                display: !isHorizontal, // Hide Y Numbers for Vertical Chart (Position). Show for Horizontal (Performers) to see Names.
                                 color: textColor,
-                                font: { size: 10 },
-                                // Hide Y Axis Labels for Position Chart if vertical, or X if horizontal
-                                display: !isHorizontal // If vertical bar (Position), hide Y labels. If horizontal (Performers), show Y labels (Names)
+                                font: { size: 10 }
                             },
                             grid: { display: false } // Hide Grid
                         }
