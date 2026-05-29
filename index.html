@@ -193,8 +193,8 @@
                     <label class="block text-xs md:text-sm font-medium mb-1">Position</label>
                     <select id="filterPosition" class="w-full p-2 text-sm border rounded-md dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary">
                         <option value="">All Positions</option>
-                        <option value="__ALL_RM__" class="font-bold text-blue-600">-- All RM --</option>
-                        <option value="__ALL_CS__" class="font-bold text-green-600">-- All CS --</option>
+                        <option value="__ALL_RM__" class="font-bold text-blue-600">All RM</option>
+                        <option value="__ALL_CS__" class="font-bold text-green-600">All CS</option>
                     </select>
                 </div>
 
@@ -536,7 +536,7 @@
                             borderColor: 'rgba(59, 130, 246, 1)',
                             borderWidth: 1,
                             datalabels: {
-                                anchor: 'end',
+                                anchor: 'center',
                                 align: 'top', // For vertical bars
                                 color: textColor,
                                 font: { weight: 'bold', size: 10 },
@@ -550,11 +550,12 @@
                             borderColor: 'rgba(239, 68, 68, 1)',
                             borderWidth: 1,
                             datalabels: {
-                                anchor: 'end',
+                                anchor: 'center',
                                 align: 'top', // For vertical bars
                                 color: textColor,
                                 font: { weight: 'bold', size: 10 },
-                                formatter: Math.round
+                                formatter: Math.round,
+                                display: true
                             }
                         }
                     ]
