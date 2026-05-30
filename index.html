@@ -23,9 +23,6 @@
         }
     </script>
     
-    <!-- ApexCharts v4.1.0 - Versi Stabil Terbaru -->
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@4.1.0/dist/apexcharts.min.js"></script>
-    
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -64,18 +61,29 @@
             color: #60a5fa;
         }
 
-                /* Animasi Slide Down untuk Filter */
-        #filterSection {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+        /* Animasi Bar Chart */
+        @keyframes slideInLeft {
+            from {
+                width: 0%;
+                opacity: 0;
+            }
+            to {
+                width: var(--target-width);
+                opacity: 1;
+            }
         }
-        
-        #filterSection:not(.hidden) {
-            max-height: 500px; /* Sesuaikan dengan tinggi maksimal filter */
-            padding-top: 1rem;
-            padding-bottom: 1rem;
+
+        .bar-animate {
+            animation: slideInLeft 0.8s ease-out forwards;
         }
+
+        /* Delay animasi untuk setiap bar agar muncul berurutan */
+        .bar-delay-1 { animation-delay: 0.1s; }
+        .bar-delay-2 { animation-delay: 0.2s; }
+        .bar-delay-3 { animation-delay: 0.3s; }
+        .bar-delay-4 { animation-delay: 0.4s; }
+        .bar-delay-5 { animation-delay: 0.5s; }
+        .bar-delay-6 { animation-delay: 0.6s; }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 dark:bg-darkbg dark:text-gray-200 min-h-screen font-sans">
@@ -186,7 +194,7 @@
             </button>
         </div>
 
-        <!-- Filters Section -->
+        <!-- Filters Section (Default Hidden) -->
         <div id="filterSection" class="hidden bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow transition-all duration-300 ease-in-out">
             <div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4 items-end">
                 
@@ -235,24 +243,6 @@
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
                 <div class="flex justify-between items-center mb-3 md:mb-4 border-b dark:border-gray-700 pb-2">
-                <h3 class="text-base md:text-lg font-semibold">Top 3 Performers (Booking)</h3>
-                    <!-- LEGEND -->
-                    <div class="flex space-x-4 text-xs">
-                        <div class="flex items-center">
-                            <span class="w-3 h-3 bg-blue-500 rounded-sm mr-1"></span>
-                            <span class="text-gray-600 dark:text-gray-300">Leads</span>
-                        </div>
-                        <div class="flex items-center">
-                            <span class="w-3 h-3 bg-green-500 rounded-sm mr-1"></span>
-                            <span class="text-gray-600 dark:text-gray-300">Booking</span>
-                        </div>
-                    </div>
-                </div>
-                <div id="chartPerformersFallback" class="hidden"></div>
-                <div id="chartPerformers"></div>
-            </div>
-            <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
-                <div class="flex justify-between items-center mb-3 md:mb-4 border-b dark:border-gray-700 pb-2">
                     <h3 class="text-base md:text-lg font-semibold">Performance by Position</h3>
                     <!-- LEGEND -->
                     <div class="flex space-x-4 text-xs">
@@ -266,8 +256,13 @@
                         </div>
                     </div>
                 </div>
-                <div id="chartPositionFallback" class="hidden"></div>
-                <div id="chartPosition"></div>
+                <div id="chartPositionFallback"></div>
+                <div id="chartPosition" class="hidden"></div>
+            </div>
+            <div class="bg-white dark:bg-darkcard p-3 md:p-4 rounded-lg shadow">
+                <h3 class="text-base md:text-lg font-semibold mb-3 md:mb-4 border-b dark:border-gray-700 pb-2">Top 5 Performers (Booking)</h3>
+                <div id="chartPerformersFallback"></div>
+                <div id="chartPerformers" class="hidden"></div>
             </div>
         </div>
 
@@ -295,10 +290,10 @@
                                 Leads <i class="fas fa-sort ml-1"></i>
                             </th>
                             <th scope="col" class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_FU')">
-                                Follow Up <i class="fas fa-sort ml-1"></i>
+                                FU <i class="fas fa-sort ml-1"></i>
                             </th>
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Interested')">
-                                Interested <i class="fas fa-sort ml-1"></i>
+                                Int <i class="fas fa-sort ml-1"></i>
                             </th>
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Booking')">
                                 Book <i class="fas fa-sort ml-1"></i>
@@ -324,6 +319,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadData();
             setupTheme();
+            setupFilterToggle();
             
             document.getElementById('filterInput').addEventListener('input', (e) => {
                 isNameFiltered = e.target.value.length > 0;
@@ -333,31 +329,6 @@
             document.getElementById('filterPosition').addEventListener('change', applyFilters);
             document.getElementById('filterBranch').addEventListener('change', applyFilters);
             document.getElementById('btnReset').addEventListener('click', resetFilters);
-        });
-
-                // --- Toggle Filter Section ---
-        const toggleFilterBtn = document.getElementById('toggleFilterBtn');
-        const filterSection = document.getElementById('filterSection');
-        let isFilterVisible = false;
-
-        toggleFilterBtn.addEventListener('click', () => {
-            isFilterVisible = !isFilterVisible;
-            
-            if (isFilterVisible) {
-                // Tampilkan filter
-                filterSection.classList.remove('hidden');
-                // Ubah ikon jadi close (X)
-                toggleFilterBtn.innerHTML = '<i class="fas fa-times"></i>';
-                toggleFilterBtn.title = "Hide Filter";
-            } else {
-                // Sembunyikan filter
-                setTimeout(() => {
-                    filterSection.classList.add('hidden');
-                }, 300);
-                // Ubah ikon jadi search
-                toggleFilterBtn.innerHTML = '<i class="fas fa-search"></i>';
-                toggleFilterBtn.title = "Show Filter";
-            }
         });
 
         async function loadData() {
@@ -546,7 +517,7 @@
             document.getElementById('percBooking').innerText = `(${percBook})`;
         }
 
-        // --- CHARTING DENGAN APEXCHARTS - VERSI FINAL STABIL ---
+        // --- CHARTING DENGAN FALLBACK MANUAL + ANIMASI ---
         function updateCharts() {
             // 1. Performance by Position - GUNAKAN FALLBACK MANUAL
             const posGroups = {};
@@ -578,7 +549,7 @@
             // 2. Top 5 Performers - JUGA GUNAKAN FALLBACK MANUAL AGAR KONSISTEN
             const top5 = [...filteredData]
                 .sort((a, b) => (Number(b.Jlh_Leads_Booking) || 0) - (Number(a.Jlh_Leads_Booking) || 0))
-                .slice(0, 3);
+                .slice(0, 5);
 
             const categories = top5.map(d => d['Marketing Name']);
             const leadsData = top5.map(d => Number(d.Jlh_Leads) || 0);
@@ -586,111 +557,8 @@
 
             // Sembunyikan canvas ApexCharts dan tampilkan fallback manual
             document.querySelector("#chartPerformers").classList.add('hidden');
-            
-            // Buat elemen fallback jika belum ada
-            let fallbackContainer = document.querySelector("#chartPerformersFallback");
-            if (!fallbackContainer) {
-                fallbackContainer = document.createElement('div');
-                fallbackContainer.id = 'chartPerformersFallback';
-                fallbackContainer.className = 'mt-4'; // Tambahkan margin top agar rapi
-                document.querySelector("#chartPerformers").parentNode.appendChild(fallbackContainer);
-            }
-            
-            fallbackContainer.classList.remove('hidden');
+            document.querySelector("#chartPerformersFallback").classList.remove('hidden');
             renderManualBarChart('chartPerformersFallback', categories, leadsData, bookingData);
-        }
-        
-        function renderApexChart(elementId, categories, leadsData, bookingData, isHorizontal = false) {
-            const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? '#cbd5e1' : '#475569';
-
-            // Validasi akhir sebelum render
-            if (!categories || categories.length === 0 || 
-                !leadsData || leadsData.length === 0 || 
-                !bookingData || bookingData.length === 0) {
-                document.querySelector("#" + elementId).innerHTML = 
-                    '<div class="flex items-center justify-center h-[350px] text-gray-500">No data available</div>';
-                return;
-            }
-
-            // HAPUS CHART LAMA DENGAN BENAR
-            const container = document.querySelector("#" + elementId);
-            if (container) {
-                while (container.firstChild) {
-                    container.removeChild(container.firstChild);
-                }
-            }
-
-            var options = {
-                series: [{
-                    name: 'Leads Injected',
-                    data: leadsData
-                }, {
-                    name: 'Booking',
-                    data: bookingData
-                }],
-                chart: {
-                    type: 'bar',
-                    height: 350,
-                    toolbar: { show: false },
-                    animations: {
-                        enabled: false // Matikan animasi untuk mencegah konflik
-                    }
-                },
-                plotOptions: {
-                    bar: {
-                        horizontal: isHorizontal,
-                        borderRadius: 4
-                    }
-                },
-                dataLabels: {
-                    enabled: true,
-                    style: {
-                        fontSize: '10px',
-                        colors: [textColor]
-                    },
-                    formatter: function(val) {
-                        return Math.round(val);
-                    }
-                },
-                xaxis: {
-                    categories: isHorizontal ? categories : undefined,
-                    labels: {
-                        style: {
-                            colors: textColor,
-                            fontSize: '10px'
-                        }
-                    }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            colors: textColor,
-                            fontSize: '10px'
-                        }
-                    }
-                },
-                legend: {
-                    position: 'top',
-                    labels: {
-                        colors: textColor
-                    }
-                },
-                tooltip: {
-                    theme: isDark ? 'dark' : 'light'
-                },
-                colors: ['#3b82f6', '#10b981']
-            };
-
-            try {
-                var chart = new ApexCharts(container, options);
-                chart.render();
-                console.log(`Chart ${elementId} rendered successfully`);
-            } catch (error) {
-                console.error(`Error rendering chart ${elementId}:`, error);
-                container.innerHTML = 
-                    '<div class="flex items-center justify-center h-[350px] text-red-500">Chart render failed</div>';
-            }
         }
 
         function renderManualBarChart(elementId, categories, leadsData, bookingData) {
@@ -707,18 +575,30 @@
                 const leadPercent = (leadsData[i] / maxVal) * 100;
                 const bookPercent = (bookingData[i] / maxVal) * 100;
 
+                // Tambahkan class delay berdasarkan index untuk efek berurutan
+                const delayClass = `bar-delay-${(i % 6) + 1}`;
+
                 html += `
-                    <div class="flex items-center text-xs">
-                        <span class="w-32 truncate" style="color: ${textColor}">${categories[i]}</span>
-                        <div class="flex-1 mx-2">
-                            <div class="flex space-x-1 h-4">
-                                <div class="bg-blue-500 rounded-l" style="width: ${leadPercent}%;" title="Leads: ${leadsData[i]}"></div>
-                                <div class="bg-green-500 rounded-r" style="width: ${bookPercent}%;" title="Booking: ${bookingData[i]}"></div>
+                    <div class="flex items-center text-xs group hover:bg-gray-50 dark:hover:bg-gray-800 p-1 rounded transition">
+                        <span class="w-32 truncate font-medium" style="color: ${textColor}">${categories[i]}</span>
+                        <div class="flex-1 mx-2 relative">
+                            <!-- Background track -->
+                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                                <!-- Leads Bar with Animation -->
+                                <div class="h-full bg-blue-500 rounded-l-full bar-animate ${delayClass}" 
+                                     style="--target-width: ${leadPercent}%;"
+                                     title="Leads: ${leadsData[i]}">
+                                </div>
+                                <!-- Booking Bar with Animation -->
+                                <div class="h-full bg-green-500 rounded-r-full bar-animate ${delayClass}" 
+                                     style="--target-width: ${bookPercent}%;"
+                                     title="Booking: ${bookingData[i]}">
+                                </div>
                             </div>
                         </div>
-                        <div class="w-16 text-right" style="color: ${textColor}">
-                            <span class="text-blue-600">${leadsData[i]}</span> / 
-                            <span class="text-green-600">${bookingData[i]}</span>
+                        <div class="w-20 text-right font-semibold" style="color: ${textColor}">
+                            <span class="text-blue-600 dark:text-blue-400">${leadsData[i]}</span> / 
+                            <span class="text-green-600 dark:text-green-400">${bookingData[i]}</span>
                         </div>
                     </div>
                 `;
@@ -797,6 +677,26 @@
                     localStorage.theme = 'light';
                 }
                 updateCharts(); 
+            });
+        }
+
+        function setupFilterToggle() {
+            const toggleFilterBtn = document.getElementById('toggleFilterBtn');
+            const filterSection = document.getElementById('filterSection');
+            let isFilterVisible = false;
+
+            toggleFilterBtn.addEventListener('click', () => {
+                isFilterVisible = !isFilterVisible;
+                
+                if (isFilterVisible) {
+                    filterSection.classList.remove('hidden');
+                    toggleFilterBtn.innerHTML = '<i class="fas fa-times"></i>';
+                    toggleFilterBtn.title = "Hide Filter";
+                } else {
+                    filterSection.classList.add('hidden');
+                    toggleFilterBtn.innerHTML = '<i class="fas fa-search"></i>';
+                    toggleFilterBtn.title = "Show Filter";
+                }
             });
         }
     </script>
