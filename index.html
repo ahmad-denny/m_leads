@@ -531,7 +531,7 @@
             // 2. Top 5 Performers - JUGA GUNAKAN FALLBACK MANUAL AGAR KONSISTEN
             const top5 = [...filteredData]
                 .sort((a, b) => (Number(b.Jlh_Leads_Booking) || 0) - (Number(a.Jlh_Leads_Booking) || 0))
-                .slice(0, 5);
+                .slice(0, 6);
 
             const categories = top5.map(d => d['Marketing Name']);
             const leadsData = top5.map(d => Number(d.Jlh_Leads) || 0);
