@@ -575,25 +575,26 @@
                 const leadPercent = (leadsData[i] / maxVal) * 100;
                 const bookPercent = (bookingData[i] / maxVal) * 100;
 
-                // Tambahkan class delay berdasarkan index untuk efek berurutan
+                // Delay animasi berurutan
                 const delayClass = `bar-delay-${(i % 6) + 1}`;
 
                 html += `
                     <div class="flex items-center text-xs group hover:bg-gray-50 dark:hover:bg-gray-800 p-1 rounded transition">
                         <span class="w-32 truncate font-medium" style="color: ${textColor}">${categories[i]}</span>
-                        <div class="flex-1 mx-2 relative">
-                            <!-- Background track -->
-                            <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                                <!-- Leads Bar with Animation -->
-                                <div class="h-full bg-blue-500 rounded-l-full bar-animate ${delayClass}" 
-                                     style="--target-width: ${leadPercent}%;"
-                                     title="Leads: ${leadsData[i]}">
-                                </div>
-                                <!-- Booking Bar with Animation -->
-                                <div class="h-full bg-green-500 rounded-r-full bar-animate ${delayClass}" 
-                                     style="--target-width: ${bookPercent}%;"
-                                     title="Booking: ${bookingData[i]}">
-                                </div>
+                        <div class="flex-1 mx-2 relative h-4">
+                            <!-- Background Track -->
+                            <div class="absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"></div>
+                            
+                            <!-- Leads Bar (Blue) - Full Width Based on Max -->
+                            <div class="absolute left-0 top-0 h-full bg-blue-500 rounded-l-full bar-animate ${delayClass}" 
+                                 style="--target-width: ${leadPercent}%;"
+                                 title="Leads: ${leadsData[i]}">
+                            </div>
+                            
+                            <!-- Booking Bar (Green) - Overlaid on Top -->
+                            <div class="absolute left-0 top-0 h-full bg-green-500 rounded-r-full bar-animate ${delayClass}" 
+                                 style="--target-width: ${bookPercent}%;"
+                                 title="Booking: ${bookingData[i]}">
                             </div>
                         </div>
                         <div class="w-20 text-right font-semibold" style="color: ${textColor}">
@@ -607,7 +608,7 @@
             html += '</div>';
             container.innerHTML = html;
         }
-
+        
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
