@@ -583,37 +583,43 @@
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
 
-            let html = '<div class="space-y-3">';
+            let html = '<div class="space-y-4">'; // Jarak antar bar sedikit diperbesar
             
             for (let i = 0; i < categories.length; i++) {
-                const maxVal = Math.max(...leadsData, ...bookingData, 1); // Hindari division by zero
+                // Hitung persentase berdasarkan nilai tertinggi antara Leads atau Booking di dataset ini
+                // Atau gunakan max global agar skala konsisten. Di sini kita pakai max global dari data yang ditampilkan.
+                const maxVal = Math.max(...leadsData, ...bookingData, 1); 
+                
                 const leadPercent = (leadsData[i] / maxVal) * 100;
                 const bookPercent = (bookingData[i] / maxVal) * 100;
 
-                // Delay animasi berurutan
                 const delayClass = `bar-delay-${(i % 6) + 1}`;
 
                 html += `
-                    <div class="flex items-center text-xs group hover:bg-gray-50 dark:hover:bg-gray-800 p-1 rounded transition">
-                        <span class="w-32 truncate font-medium" style="color: ${textColor}">${categories[i]}</span>
-                        <div class="flex-1 mx-2 relative h-4">
-                            <!-- Background Track -->
-                            <div class="absolute inset-0 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden"></div>
+                    <div class="flex items-center text-xs group hover:bg-gray-50 dark:hover:bg-gray-800 p-1 rounded-lg transition">
+                        <!-- Label Nama -->
+                        <span class="w-32 truncate font-medium pr-2" style="color: ${textColor}">${categories[i]}</span>
+                        
+                        <!-- Area Chart -->
+                        <div class="flex-1 relative h-3 md:h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-2">
                             
-                            <!-- Leads Bar (Blue) - Full Width Based on Max -->
-                            <div class="absolute left-0 top-0 h-full bg-blue-500 rounded-l-full bar-animate ${delayClass}" 
-                                 style="--target-width: ${leadPercent}%;"
-                                 title="Leads: ${leadsData[i]}">
+                            <!-- 1. Bar Leads (Biru) - Di Belakang -->
+                            <div class="absolute left-0 top-0 h-full bg-blue-500 bar-animate ${delayClass}" 
+                                 style="--target-width: ${leadPercent}%;">
                             </div>
                             
-                            <!-- Booking Bar (Green) - Overlaid on Top -->
-                            <div class="absolute left-0 top-0 h-full bg-green-500 rounded-r-full bar-animate ${delayClass}" 
-                                 style="--target-width: ${bookPercent}%;"
-                                 title="Booking: ${bookingData[i]}">
+                            <!-- 2. Bar Booking (Hijau) - Di Depan (Overlay) -->
+                            <!-- Jika Booking > Leads, hijau akan menutupi biru sepenuhnya. 
+                                 Jika Booking < Leads, hijau akan terlihat di kiri, biru di kanan. -->
+                            <div class="absolute left-0 top-0 h-full bg-green-500 bar-animate ${delayClass}" 
+                                 style="--target-width: ${bookPercent}%;">
                             </div>
                         </div>
-                        <div class="w-20 text-right font-semibold" style="color: ${textColor}">
-                            <span class="text-blue-600 dark:text-blue-400">${leadsData[i]}</span> / 
+
+                        <!-- Angka -->
+                        <div class="w-24 text-right font-semibold tabular-nums" style="color: ${textColor}">
+                            <span class="text-blue-600 dark:text-blue-400">${leadsData[i]}</span> 
+                            <span class="text-gray-400 mx-1">/</span> 
                             <span class="text-green-600 dark:text-green-400">${bookingData[i]}</span>
                         </div>
                     </div>
@@ -622,8 +628,7 @@
             
             html += '</div>';
             container.innerHTML = html;
-        }
-        
+        }        
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
