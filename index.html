@@ -378,11 +378,31 @@
         }
 
         function populateDropdowns() {
-            const periods = [...new Set(rawData.map(d => d.Period))].sort();
+            // 1. Ambil unique periods dan urutkan (Ascending: Lama -> Baru)
+            const periods = [...new Set(rawData.map(d => d.Period))]
+                .filter(p => p) // Hapus nilai null/undefined jika ada
+                .sort((a, b) => {
+                    // Coba parse sebagai Date untuk sorting yang akurat
+                    const dateA = new Date(a);
+                    const dateB = new Date(b);
+                    return dateA - dateB; 
+                });
+        
             const positions = [...new Set(rawData.map(d => d.Position))].sort();
             const branches = [...new Set(rawData.map(d => d.Branch))].sort();
-
+        
+            // 2. Isi Dropdown Period
             fillSelect('filterPeriod', periods);
+        
+            // 3. SET DEFAULT KE TANGGAL TERAKHIR
+            const periodSelect = document.getElementById('filterPeriod');
+            if (periods.length > 0) {
+                // Ambil elemen terakhir dari array yang sudah diurutkan (tanggal terbaru)
+                const lastPeriod = periods[periods.length - 1];
+                periodSelect.value = lastPeriod;
+            }
+        
+            // 4. Isi Dropdown lainnya seperti biasa
             fillSelect('filterPosition', positions);
             fillSelect('filterBranch', branches);
         }
