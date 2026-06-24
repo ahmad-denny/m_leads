@@ -591,60 +591,50 @@
         function renderManualBarChart(elementId, categories, leadsData, bookingData) {
             const container = document.querySelector("#" + elementId);
             if (!container) return;
-
+        
             const isDark = document.documentElement.classList.contains('dark');
             const textColor = isDark ? '#cbd5e1' : '#475569';
-
-            // Cari nilai maksimal TOTAL (Leads + Booking) untuk skala grafik
-            // Ini agar batang abu-abu mewakili kapasitas maksimal atau 100% dari nilai terbesar
+        
             let maxTotal = 0;
             for(let i=0; i<leadsData.length; i++) {
                 let total = (leadsData[i] || 0) + (bookingData[i] || 0);
                 if(total > maxTotal) maxTotal = total;
             }
-            // Fallback jika semua 0
             if (maxTotal === 0) maxTotal = 1;
-
+        
             let html = '<div class="space-y-4">'; 
             
             for (let i = 0; i < categories.length; i++) {
                 const leadVal = leadsData[i] || 0;
                 const bookVal = bookingData[i] || 0;
                 
-                // Hitung persentase terhadap Max Total agar skala konsisten antar baris
+                // ✅ FORMAT RIBUAN UNTUK CHART
+                const leadDisplay = leadVal.toLocaleString('id-ID');
+                const bookDisplay = bookVal.toLocaleString('id-ID');
+                
                 const leadPercent = (leadVal / maxTotal) * 100;
                 const bookPercent = (bookVal / maxTotal) * 100;
-                
-                // Posisi awal Hijau adalah setelah Biru selesai
                 const greenLeftPos = leadPercent; 
-
                 const delayClass = `bar-delay-${(i % 6) + 1}`;
-
+        
                 html += `
                     <div class="flex items-center text-xs group hover:bg-gray-50 dark:hover:bg-gray-800 p-1 rounded-lg transition">
-                        <!-- Label Nama -->
                         <span class="w-32 truncate font-medium pr-2" style="color: ${textColor}">${categories[i]}</span>
                         
-                        <!-- Area Chart Track -->
                         <div class="flex-1 relative h-3 md:h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mx-2">
-                            
-                            <!-- 1. Bar Leads (Biru) - Mulai dari 0 -->
                             <div class="absolute left-0 top-0 h-full bg-blue-500 rounded-l-full bar-animate ${delayClass}" 
                                  style="--target-width: ${leadPercent}%;">
                             </div>
-                            
-                            <!-- 2. Bar Booking (Hijau) - Mulai dari Ujung Biru -->
-                            <!-- Kita pakai rounded-r-full agar ujung paling kanan tabel bulat -->
                             <div class="absolute top-0 h-full bg-green-500 rounded-r-full bar-animate ${delayClass}" 
                                  style="left: ${greenLeftPos}%; --target-width: ${bookPercent}%;">
                             </div>
                         </div>
-
-                        <!-- Angka -->
+        
+                        <!-- ✅ GUNAKAN VARIABEL YANG SUDAH DIFORMAT -->
                         <div class="w-24 text-right font-semibold tabular-nums" style="color: ${textColor}">
-                            <span class="text-blue-600 dark:text-blue-400">${leadVal}</span> 
+                            <span class="text-blue-600 dark:text-blue-400">${leadDisplay}</span> 
                             <span class="text-gray-400 mx-1">/</span> 
-                            <span class="text-green-600 dark:text-green-400">${bookVal}</span>
+                            <span class="text-green-600 dark:text-green-400">${bookDisplay}</span>
                         </div>
                     </div>
                 `;
@@ -655,22 +645,12 @@
         }
         
         function renderTable() {
-        const tbody = document.getElementById('tableBody');
+            const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
-            
-            // Reset semua icon sort ke default dulu
-            document.querySelectorAll('thead th i').forEach(icon => {
-                icon.className = 'fas fa-sort ml-1'; 
-            });
-        
-            // Set icon sort pada kolom Name menjadi 'fa-sort-up' (aktif)
-            // Cari elemen th yang memiliki onclick="sortTable('Marketing Name')"
-            const nameHeader = document.querySelector("th[onclick=\"sortTable('Marketing Name')\"] i");
-            if (nameHeader) {
-                nameHeader.className = 'fas fa-sort-up ml-1 text-primary'; // Ganti warna jadi biru agar jelas
-            }
-        
             document.getElementById('rowCount').textContent = `Showing ${filteredData.length.toLocaleString('id-ID')} rows`;
+        
+            // ✅ Helper format ribuan
+            const fmt = (val) => (Number(val) || 0).toLocaleString('id-ID');
         
             filteredData.forEach(row => {
                 const tr = document.createElement('tr');
@@ -678,16 +658,13 @@
                 tr.onclick = () => filterByName(row['Marketing Name']);
                 tr.style.cursor = 'pointer';
         
-                // Helper function lokal untuk format angka di tabel
-                const fmt = (val) => (Number(val) || 0).toLocaleString('id-ID');
-        
                 tr.innerHTML = `
                     <td class="hidden">${row.NIK}</td>
                     <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm font-medium text-primary clickable-name">${row['Marketing Name']}</td>
                     <td class="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400">${row.Position}</td>
                     <td class="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400">${row.Branch}</td>
                     
-                    <!-- Angka di tabel sekarang diformat -->
+                    <!-- ✅ SEMUA ANGKA TABEL PAKAI fmt() -->
                     <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right font-bold">${fmt(row.Jlh_Leads)}</td>
                     <td class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right">${fmt(row.Jlh_Leads_FU)}</td>
                     <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right text-green-600 dark:text-green-400">${fmt(row.Jlh_Leads_Interested)}</td>
@@ -695,8 +672,7 @@
                 `;
                 tbody.appendChild(tr);
             });
-        }
-        
+        }        
         function sortTable(key) {
             if (currentSortKey === key) {
                 sortDirection *= -1;
