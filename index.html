@@ -623,15 +623,23 @@
             document.querySelector("#chartPositionFallback").classList.remove('hidden');
             renderManualBarChart('chartPositionFallback', posLabels, posLeadsData, posBookingData);
 
-            // 2. Top 5 Performers - JUGA GUNAKAN FALLBACK MANUAL AGAR KONSISTEN
+        // --- PERBAIKAN TOP 5 PERFORMERS ---
             const top5 = [...filteredData]
+                .filter(d => (Number(d.Jlh_Leads_Booking) || 0) > 0) // ✅ Hanya ambil yang Booking > 0
                 .sort((a, b) => (Number(b.Jlh_Leads_Booking) || 0) - (Number(a.Jlh_Leads_Booking) || 0))
                 .slice(0, 5);
-
+        
+            // Jika tidak ada yang booking, tampilkan pesan atau kosongkan chart
+            if (top5.length === 0) {
+                document.querySelector("#chartPerformersFallback").innerHTML = 
+                    '<div class="text-center text-gray-500 py-4">Belum ada booking di periode ini</div>';
+                return;
+            }
+        
             const categories = top5.map(d => d['Marketing Name']);
             const leadsData = top5.map(d => Number(d.Jlh_Leads) || 0);
             const bookingData = top5.map(d => Number(d.Jlh_Leads_Booking) || 0);
-
+        
             // Sembunyikan canvas ApexCharts dan tampilkan fallback manual
             document.querySelector("#chartPerformers").classList.add('hidden');
             document.querySelector("#chartPerformersFallback").classList.remove('hidden');
