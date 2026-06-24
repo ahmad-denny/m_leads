@@ -474,11 +474,21 @@
         }
 
         function resetFilters() {
+            // 1. Reset input text dan dropdown lainnya
             document.getElementById('filterInput').value = '';
-            document.getElementById('filterPeriod').value = '';
             document.getElementById('filterPosition').value = '';
             document.getElementById('filterBranch').value = '';
+            
+            // 2. SET PERIOD KE TANGGAL TERAKHIR (Bukan 'All Periods')
+            const periodSelect = document.getElementById('filterPeriod');
+            // Ambil opsi terakhir (karena sudah di-sort ascending di populateDropdowns)
+            if (periodSelect.options.length > 1) { 
+                periodSelect.selectedIndex = periodSelect.options.length - 1;
+            }
+        
             isNameFiltered = false;
+            
+            // 3. Jalankan filter ulang
             applyFilters();
         }
 
