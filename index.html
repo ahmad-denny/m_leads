@@ -298,10 +298,13 @@
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads')">
                                 Leads <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_FU')">
+                            <!-- Header Khusus Mobile (FU) -->
+                            <th scope="col" class="sm:hidden px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_FU')">
                                 FU <i class="fas fa-sort ml-1"></i>
                             </th>
-                            <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Interested')">
+                            
+                            <!-- Header Khusus Desktop (Int) -->
+                            <th scope="col" class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Interested')">
                                 Int <i class="fas fa-sort ml-1"></i>
                             </th>
                             <th scope="col" class="px-2 md:px-6 py-2 md:py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 none tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700" onclick="sortTable('Jlh_Leads_Booking')">
@@ -677,9 +680,17 @@
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
+            
+            // Deteksi apakah sedang mode mobile (lebar layar < 768px / breakpoint 'md' Tailwind)
+            const isMobile = window.innerWidth < 768; 
+        
+            // Update header kolom ke-3 (Int/FU) secara dinamis
+            // Index 0: Hidden NIK, 1: Name, 2: Leads, 3: Int/FU (di mobile), 4: Book
+            // Catatan: Di HTML asli Anda, urutan kolom desktop beda dengan mobile.
+            // Mari kita gunakan logika rendering sel yang fleksibel.
+        
             document.getElementById('rowCount').textContent = `Showing ${filteredData.length.toLocaleString('id-ID')} rows`;
         
-            // ✅ Helper format ribuan
             const fmt = (val) => (Number(val) || 0).toLocaleString('id-ID');
         
             filteredData.forEach(row => {
@@ -688,21 +699,82 @@
                 tr.onclick = () => filterByName(row['Marketing Name']);
                 tr.style.cursor = 'pointer';
         
-                tr.innerHTML = `
+                // --- LOGIKA MOBILE VS DESKTOP ---
+                
+                // 1. Kolom Name (Selalu muncul)
+                let htmlContent = `
                     <td class="hidden">${row.NIK}</td>
                     <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm font-medium text-primary clickable-name">${row['Marketing Name']}</td>
+                `;
+        
+                // 2. Kolom Position & Branch (Hanya Desktop/Tablet)
+                // Sesuai screenshot mobile Anda, kolom ini hilang.
+                htmlContent += `
                     <td class="hidden md:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400">${row.Position}</td>
                     <td class="hidden lg:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-gray-500 dark:text-gray-400">${row.Branch}</td>
-                    
-                    <!-- ✅ SEMUA ANGKA TABEL PAKAI fmt() -->
+                `;
+        
+                // 3. Kolom Leads (Selalu muncul)
+                htmlContent += `
                     <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right font-bold">${fmt(row.Jlh_Leads)}</td>
-                    <td class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right">${fmt(row.Jlh_Leads_FU)}</td>
-                    <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right text-green-600 dark:text-green-400">${fmt(row.Jlh_Leads_Interested)}</td>
+                `;
+        
+                // 4. Kolom Tengah (FU di Mobile, Int di Desktop)
+                if (isMobile) {
+                    // Tampilan Mobile: Menampilkan Follow Up (FU)
+                    // Kita pakai class 'sm:hidden' agar otomatis hilang saat layar membesar
+                    htmlContent += `
+                        <td class="sm:hidden px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right text-yellow-600 dark:text-yellow-400">
+                            ${fmt(row.Jlh_Leads_FU)}
+                        </td>
+                    `;
+                } else {
+                    // Tampilan Desktop: Menampilkan Interest (Int)
+                    // Kita pakai class 'hidden sm:table-cell' (sesuai HTML asli Anda)
+                htmlContent += `
+                        <td class="hidden sm:table-cell px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right text-green-600 dark:text-green-400">
+                            ${fmt(row.Jlh_Leads_Interested)}
+                        </td>
+                    `;
+                }
+        
+                // 5. Kolom Booking (Selalu muncul)
+                htmlContent += `
                     <td class="px-2 md:px-6 py-2 md:py-3 whitespace-nowrap text-xs md:text-sm text-right text-blue-600 dark:text-blue-400 font-bold">${fmt(row.Jlh_Leads_Booking)}</td>
                 `;
-                tbody.appendChild(tr);
+        
+            tr.innerHTML = htmlContent;
+            tbody.appendChild(tr);
             });
-        }        
+                
+                    // --- UPDATE HEADER TABLE SECARA DINAMIS ---
+                    // Mencari elemen header ke-3 (index 3 jika NIK hidden dihitung, atau sesuaikan selector)
+                    // Cara termudah: beri ID pada header th yang bersangkutan di HTML, atau update textnya manual.
+                    
+                    // Jika Anda tidak ingin repot memberi ID, kita bisa cari berdasarkan teks "Int" atau "FU"
+                    // Tapi lebih baik kita update text header agar sinkron.
+            const headers = document.querySelectorAll('thead th');
+                    // Asumsi urutan header di HTML: [NIK(hidden), Name, Position(hidden md), Branch(hidden lg), Leads, FU/Int, Book]
+                    // Di Mobile (kecil): Name, Leads, [FU], Book
+                    
+                    // Kita butuh logika untuk menyembunyikan header "Int" di mobile dan memunculkan "FU"
+                    // Atau cukup ganti teks header ke-5 (Leads) -> ke-6 (Int/FU) -> ke-7 (Book)
+                    
+                    // Mari kita asumsikan struktur header HTML Anda tetap. 
+                    // Kita manipulasi visibility header "Int" yang asli.
+                    
+                    // Cari header yang berisi "Int"
+                    // (Pastikan di HTML Anda ada header untuk FU yang hidden by default, atau kita buat dinamis)
+                    
+                    // SOLUSI PALING RAPIH: 
+                    // Ubah HTML Header menjadi seperti ini:
+                    /*
+            <th id="header-fu-mobile" class="sm:hidden ...">FU <i...></th>
+            <th id="header-int-desktop" class="hidden sm:table-cell ...">Int <i...></th>
+                    */
+        }
+
+        
         function sortTable(key) {
             if (currentSortKey === key) {
                 sortDirection *= -1;
