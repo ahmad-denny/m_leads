@@ -425,6 +425,17 @@
                 return matchText && matchPeriod && matchPos && matchBranch;
             });
 
+            // --- TAMBAHKAN BAGIAN INI ---
+                // Sort by 'Marketing Name' ascending (A-Z) secara default
+                filteredData.sort((a, b) => {
+                    const nameA = (a['Marketing Name'] || '').toString().toLowerCase();
+                    const nameB = (b['Marketing Name'] || '').toString().toLowerCase();
+                    if (nameA < nameB) return -1;
+                    if (nameA > nameB) return 1;
+                    return 0;
+                });
+            // ---------------------------
+            
             updateDashboard();
             updateActiveFilterBanner();
         }
@@ -644,10 +655,21 @@
         }
         
         function renderTable() {
-            const tbody = document.getElementById('tableBody');
+        const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
-            // Format rowCount juga biar konsisten
+            // Reset semua icon sort ke default dulu
+            document.querySelectorAll('thead th i').forEach(icon => {
+                icon.className = 'fas fa-sort ml-1'; 
+            });
+        
+            // Set icon sort pada kolom Name menjadi 'fa-sort-up' (aktif)
+            // Cari elemen th yang memiliki onclick="sortTable('Marketing Name')"
+            const nameHeader = document.querySelector("th[onclick=\"sortTable('Marketing Name')\"] i");
+            if (nameHeader) {
+                nameHeader.className = 'fas fa-sort-up ml-1 text-primary'; // Ganti warna jadi biru agar jelas
+            }
+        
             document.getElementById('rowCount').textContent = `Showing ${filteredData.length.toLocaleString('id-ID')} rows`;
         
             filteredData.forEach(row => {
