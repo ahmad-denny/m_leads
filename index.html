@@ -426,12 +426,12 @@
             });
 
             // --- TAMBAHKAN BAGIAN INI ---
-                // Sort by 'Marketing Name' ascending (A-Z) secara default
+                // Sort by 'Jumlah Lead' descending (Z-A) secara default
                 filteredData.sort((a, b) => {
-                    const nameA = (a['Marketing Name'] || '').toString().toLowerCase();
-                    const nameB = (b['Marketing Name'] || '').toString().toLowerCase();
-                    if (nameA < nameB) return -1;
-                    if (nameA > nameB) return 1;
+                    const nameA = (a['Jlh_Leads'] || '').toString().toLowerCase();
+                    const nameB = (b['Jlh_Leads'] || '').toString().toLowerCase();
+                    if (nameA > nameB) return -1;
+                    if (nameA < nameB) return 1;
                     return 0;
                 });
             // ---------------------------
